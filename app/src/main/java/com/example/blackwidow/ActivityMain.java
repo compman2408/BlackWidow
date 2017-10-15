@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 public class ActivityMain extends Activity {
+    private static final String TAG = "ActivityMain";
 
     Button btnScanNetwork;
     AnimationDrawable btnAnimation;
@@ -38,10 +39,10 @@ public class ActivityMain extends Activity {
 
         // Start the scan button animation
         btnScanNetwork = (Button) findViewById(R.id.btnScanNetwork);
-        btnAnimation = (AnimationDrawable) btnScanNetwork.getBackground();
+//        btnAnimation = (AnimationDrawable) btnScanNetwork.getBackground();
 
-//        btnAnimation = new AnimationScan(this, R.drawable.btn_scan_frame0);
-//        btnScanNetwork.setBackground(btnAnimation);
+        btnAnimation = new AnimationScan(this, R.drawable.btn_scan_frame0);
+        btnScanNetwork.setBackground(btnAnimation);
     }
 
     @Override
