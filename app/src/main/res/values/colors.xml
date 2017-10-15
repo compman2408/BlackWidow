@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#cccccc</color>
+    <color name="colorPrimaryDark">#878787</color>
+    <color name="colorAccent">#ff202f</color>
+
+    <!-- Scan Network button gradient -->
+    <color name="colorBtnScanStart">#FFFF0000</color>
+    <color name="colorBtnScanEnd">#9c0000</color>
 </resources>

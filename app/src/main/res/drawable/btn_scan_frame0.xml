@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape
+            android:shape="rectangle" >
+            <gradient
+                android:type="radial"
+                android:centerX="50%"
+                android:centerY="45%"
+                android:startColor="@color/colorBtnScanStart"
+                android:endColor="@color/colorBtnScanEnd"
+                android:gradientRadius="100%"/>
+            <corners android:radius="@dimen/btnScanRadius" />
+        </shape>
+    </item>
+    <item>
+        <shape
+            android:shape="rectangle" >
+            <gradient
+                android:type="linear"
+                android:centerX="0%"
+                android:startColor="#00ff0000"
+                android:centerColor="#FFFFDBDB"
+                android:endColor="#00ff0000"
+                android:angle="270"/>
+            <corners android:radius="@dimen/btnScanRadius" />
+        </shape>
+    </item>
+</layer-list>
