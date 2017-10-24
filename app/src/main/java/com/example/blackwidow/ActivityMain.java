@@ -62,4 +62,8 @@ public class ActivityMain extends Activity {
     public void btnScanNetwork_OnClick(View view) {
         startActivity(new Intent(this, ActivityScan.class));
     }
+
+    public void btnNmapTest_OnClick(View view) {
+        startActivity(new Intent(this, ActivityNmapTest.class));
+    }
 }
