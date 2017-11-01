@@ -9,7 +9,7 @@
                 android:centerY="45%"
                 android:startColor="@color/colorBtnScanStart"
                 android:endColor="@color/colorBtnScanEnd"
-                android:gradientRadius="100%"/>
+                android:gradientRadius="100%p"/>
             <corners android:radius="@dimen/btnScanRadius" />
         </shape>
     </item>
