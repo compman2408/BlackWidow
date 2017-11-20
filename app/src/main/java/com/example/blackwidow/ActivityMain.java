@@ -24,6 +24,7 @@ public class ActivityMain extends Activity {
     public static String binaryFileLocation;
 
     Button btnScanNetwork;
+    Button btnSimpleScan;
     AnimationDrawable btnAnimation;
 
     /**
@@ -46,6 +47,7 @@ public class ActivityMain extends Activity {
         TextView tv = (TextView) findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
 
+        btnSimpleScan = (Button) findViewById(R.id.btnSimpleScan);
         // Start the scan button animation
         btnScanNetwork = (Button) findViewById(R.id.btnScanNetwork);
 //        btnAnimation = (AnimationDrawable) btnScanNetwork.getBackground();
@@ -86,42 +88,42 @@ public class ActivityMain extends Activity {
         // If the binary files don't currently exist copy them out of the raw resources onto the
         // internal storage of the device since the external storage won't allow us to run the
         // executable on the Android system
-        Log.d(TAG, "Checking binary directory existance...");
+        Log.wtf(TAG, "Checking binary directory existance...");
         File file = new File(binaryFileLocation);
         if (!file.exists()) {
-            Log.d(TAG, "Binary directory doesn't exist. Creating directories...");
+            Log.wtf(TAG, "Binary directory doesn't exist. Creating directories...");
             // Create binary directory
             file.mkdirs();
-            Log.d(TAG, "Directories created. Copying files...");
+            Log.wtf(TAG, "Directories created. Copying files...");
         } else {
-            Log.d(TAG, "Binary directory already exists. Moving on to files.");
+            Log.wtf(TAG, "Binary directory already exists. Moving on to files.");
         }
-        Log.d(TAG, "Checking binary files existance...");
+        Log.wtf(TAG, "Checking binary files existance...");
         int count = 0;
         for (Map.Entry<Integer, String> item : binaryFilesToCopy.entrySet()) {
             count++;
             file = new File(item.getValue());
             if (!file.exists()) {
-                Log.d(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " doesn't exist.");
+                Log.wtf(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " doesn't exist.");
                 try {
-                    Log.d(TAG, "Copying binary " + count + " out of " + binaryFilesToCopy.size());
+                    Log.wtf(TAG, "Copying binary " + count + " out of " + binaryFilesToCopy.size());
                     copyBinFilesToInternalStorage(item.getKey(), item.getValue());
-                    Log.d(TAG, "File copy successful!");
+                    Log.wtf(TAG, "File copy successful!");
                 } catch (IOException ex) {
-                    Log.d(TAG, "Error copying file: " + ex.getMessage());
+                    Log.wtf(TAG, "Error copying file: " + ex.getMessage());
                     ex.printStackTrace();
                 }
                 try {
-                    Log.d(TAG, "Making binary executable...");
-                    Process process = Runtime.getRuntime().exec("chmod oug+x " + item.getValue());
+                    Log.wtf(TAG, "Making binary executable...");
+                    Process process = Runtime.getRuntime().exec("chmod 777 " + item.getValue());
                     process.waitFor();
-                    Log.d(TAG, "Binary executable!");
+                    Log.wtf(TAG, "Binary executable!");
                 } catch (Exception ex) {
-                    Log.d(TAG, "Error marking file as executable: " + ex.getMessage());
+                    Log.wtf(TAG, "Error marking file as executable: " + ex.getMessage());
                     ex.printStackTrace();
                 }
             } else {
-                Log.d(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " already exists. Skipping file copy...");
+                Log.wtf(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " already exists. Skipping file copy...");
             }
         }
     }
@@ -147,5 +149,9 @@ public class ActivityMain extends Activity {
 
     public void btnNmapTest_OnClick(View view) {
         startActivity(new Intent(this, ActivityNmapTest.class));
+    }
+
+    public void btnSimpleScan_OnClick(View view) {
+        startActivity(new Intent(this, ActivityNmapMain.class));
     }
 }

@@ -2,6 +2,7 @@ package com.example.blackwidow;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -9,8 +10,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 
 public class ActivityNmapTest extends Activity {
     private static final String TAG = "ActivityNmapTest";
@@ -41,6 +44,7 @@ public class ActivityNmapTest extends Activity {
 
     public void btnRunNmap_OnClick(View view) {
         if (_txtNmapParameters.getText().toString().length() == 0) {
+            Log.v("COMMAND", "SOMETHING");
             runCommandInCLI(ActivityMain.binaryFilesToCopy.get(R.raw.nmap2));
         } else {
             runCommandInCLI(ActivityMain.binaryFilesToCopy.get(R.raw.nmap2) + " " + _txtNmapParameters.getText().toString());
@@ -64,15 +68,26 @@ public class ActivityNmapTest extends Activity {
 
     private String executeCommand(String cmdToExecute) {
         StringBuffer output = new StringBuffer();
+        Log.wtf("COMMAND", cmdToExecute);
+        Process scanProcess;
         try {
+            ProcessBuilder pBuilder = new ProcessBuilder("su");
+            pBuilder.redirectErrorStream(true);
+            scanProcess = pBuilder.start();
             // Executes the command.
-            Process process = Runtime.getRuntime().exec(cmdToExecute);
-
+        //    Process process = Runtime.getRuntime().exec(cmdToExecute);
+     //       Process process = Runtime.getRuntime().exec(cmdToExecute,null, null);
+            DataOutputStream dos = new DataOutputStream(scanProcess.getOutputStream());
+            dos.writeBytes(cmdToExecute + "\n");
+            dos.flush();
+            dos.writeBytes("exit\n");
+            dos.flush();
+            dos.close();//*/
             // Reads stdout.
             // NOTE: You can write to stdin of the command using
             //       process.getOutputStream().
             BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()));
+                    new InputStreamReader(scanProcess.getInputStream()));
             int read;
             char[] buffer = new char[4096];
             while ((read = reader.read(buffer)) > 0) {
@@ -81,7 +96,7 @@ public class ActivityNmapTest extends Activity {
             reader.close();
 
             // Waits for the command to finish.
-            process.waitFor();
+            scanProcess.waitFor();
 
             //Toast.makeText(this, "Done!", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
@@ -94,6 +109,7 @@ public class ActivityNmapTest extends Activity {
             Toast.makeText(this, "Exception ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
             e.printStackTrace();
         }
+        Log.wtf("OUTPUT", output.toString());
         return output.toString();
     }
 }
