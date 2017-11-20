@@ -73,6 +73,7 @@ public class ActivityMain extends Activity {
         binaryFilesToCopy.put(R.raw.nmap_services, binaryFileLocation + "/nmap-services");
         binaryFilesToCopy.put(R.raw.nmap_protocols, binaryFileLocation + "/nmap-protocols");
         binaryFilesToCopy.put(R.raw.nmap_rpc, binaryFileLocation + "/nmap-rpc");
+        binaryFilesToCopy.put(R.raw.nse_main, binaryFileLocation + "/nse_main.lua");
 
         // Copy the files out of the raw resources so they can be executed
         copyAllBinaryFiles();
