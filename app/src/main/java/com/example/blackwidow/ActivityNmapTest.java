@@ -13,7 +13,6 @@ import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 
 public class ActivityNmapTest extends Activity {
     private static final String TAG = "ActivityNmapTest";
@@ -45,9 +44,9 @@ public class ActivityNmapTest extends Activity {
     public void btnRunNmap_OnClick(View view) {
         if (_txtNmapParameters.getText().toString().length() == 0) {
             Log.v("COMMAND", "SOMETHING");
-            runCommandInCLI(ActivityMain.binaryFilesToCopy.get(R.raw.nmap2));
+            runCommandInCLI(ActivityMain.binaryFilesToCopy.get(R.raw.nmap64));
         } else {
-            runCommandInCLI(ActivityMain.binaryFilesToCopy.get(R.raw.nmap2) + " " + _txtNmapParameters.getText().toString());
+            runCommandInCLI(ActivityMain.binaryFilesToCopy.get(R.raw.nmap64) + " " + _txtNmapParameters.getText().toString());
         }
     }
 

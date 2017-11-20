@@ -60,11 +60,19 @@ public class ActivityMain extends Activity {
         binaryFileLocation = _appDataDirectory + "/bin";
         // Add files to copy
         binaryFilesToCopy = new HashMap<Integer, String>();
-        binaryFilesToCopy.put(R.raw.ncat, binaryFileLocation + "/ncat");
-        binaryFilesToCopy.put(R.raw.ndiff, binaryFileLocation + "/ndiff");
-        binaryFilesToCopy.put(R.raw.nmap2, binaryFileLocation + "/nmap");
-        binaryFilesToCopy.put(R.raw.nping, binaryFileLocation + "/nping");
-        binaryFilesToCopy.put(R.raw.uninstall_ndiff, binaryFileLocation + "/uninstall_ndiff");
+        binaryFilesToCopy.put(R.raw.ncat64, binaryFileLocation + "/ncat");
+        binaryFilesToCopy.put(R.raw.ndiff64, binaryFileLocation + "/ndiff");
+        binaryFilesToCopy.put(R.raw.nmap64, binaryFileLocation + "/nmap");
+        binaryFilesToCopy.put(R.raw.nping64, binaryFileLocation + "/nping");
+        binaryFilesToCopy.put(R.raw.uninstall_ndiff64, binaryFileLocation + "/uninstall_ndiff");
+
+        binaryFilesToCopy.put(R.raw.nmap_mac_prefixes, binaryFileLocation + "/nmap-mac-prefixes");
+        binaryFilesToCopy.put(R.raw.nmap_os_db, binaryFileLocation + "/nmap-os-db");
+        binaryFilesToCopy.put(R.raw.nmap_payloads, binaryFileLocation + "/nmap-payloads");
+        binaryFilesToCopy.put(R.raw.nmap_service_probes, binaryFileLocation + "/nmap-service-probes");
+        binaryFilesToCopy.put(R.raw.nmap_services, binaryFileLocation + "/nmap-services");
+        binaryFilesToCopy.put(R.raw.nmap_protocols, binaryFileLocation + "/nmap-protocols");
+        binaryFilesToCopy.put(R.raw.nmap_rpc, binaryFileLocation + "/nmap-rpc");
 
         // Copy the files out of the raw resources so they can be executed
         copyAllBinaryFiles();
