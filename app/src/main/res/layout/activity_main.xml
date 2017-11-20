@@ -18,14 +18,15 @@
     <Button
         android:id="@+id/btnScanNetwork"
         android:layout_width="200dp"
-        android:layout_height="100dp"
+        android:layout_height="200dp"
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true"
         android:elevation="10dp"
         android:textSize="30sp"
         android:textColor="@android:color/white"
         android:textStyle="bold"
-        android:background="@drawable/btn_scan_frame0"
+        android:background="@drawable/spider"
+        android:backgroundTint="A62639"
         android:text="Scan"
         android:onClick="btnScanNetwork_OnClick"/>
 
