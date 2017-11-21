@@ -19,8 +19,8 @@ import java.util.Map;
 public class ActivityMain extends Activity {
     private static final String TAG = "ActivityMain";
 
-    private String _appDataDirectory;
-    public static Map<Integer, String> binaryFilesToCopy;
+    public static  String appDataDirectory;
+    public static Map<Utils.Executable, String> executableFileLocations;
     public static String binaryFileLocation;
 
     Button btnScanNetwork;
@@ -56,27 +56,24 @@ public class ActivityMain extends Activity {
         btnScanNetwork.setBackground(btnAnimation);
 
         // Set the directories to the important stuff
-        _appDataDirectory = getApplicationContext().getFilesDir().getPath();
-        binaryFileLocation = _appDataDirectory + "/bin";
+        appDataDirectory = getApplicationContext().getFilesDir().getPath();
+        // WARNING: The following directory MUST match the directory that is inside the zip file.
+        //          DO NOT change the following directory if the directory in the zip file isn't changed.
+        binaryFileLocation = appDataDirectory + "/bin";
         // Add files to copy
-        binaryFilesToCopy = new HashMap<Integer, String>();
-        binaryFilesToCopy.put(R.raw.ncat64, binaryFileLocation + "/ncat");
-        binaryFilesToCopy.put(R.raw.ndiff64, binaryFileLocation + "/ndiff");
-        binaryFilesToCopy.put(R.raw.nmap64, binaryFileLocation + "/nmap");
-        binaryFilesToCopy.put(R.raw.nping64, binaryFileLocation + "/nping");
-        binaryFilesToCopy.put(R.raw.uninstall_ndiff64, binaryFileLocation + "/uninstall_ndiff");
+        executableFileLocations = new HashMap<>();
+        executableFileLocations.put(Utils.Executable.NCAT, binaryFileLocation + "/ncat");
+        executableFileLocations.put(Utils.Executable.NDIFF, binaryFileLocation + "/ndiff");
+        executableFileLocations.put(Utils.Executable.NMAP, binaryFileLocation + "/nmap");
+        executableFileLocations.put(Utils.Executable.NPING, binaryFileLocation + "/nping");
 
-        binaryFilesToCopy.put(R.raw.nmap_mac_prefixes, binaryFileLocation + "/nmap-mac-prefixes");
-        binaryFilesToCopy.put(R.raw.nmap_os_db, binaryFileLocation + "/nmap-os-db");
-        binaryFilesToCopy.put(R.raw.nmap_payloads, binaryFileLocation + "/nmap-payloads");
-        binaryFilesToCopy.put(R.raw.nmap_service_probes, binaryFileLocation + "/nmap-service-probes");
-        binaryFilesToCopy.put(R.raw.nmap_services, binaryFileLocation + "/nmap-services");
-        binaryFilesToCopy.put(R.raw.nmap_protocols, binaryFileLocation + "/nmap-protocols");
-        binaryFilesToCopy.put(R.raw.nmap_rpc, binaryFileLocation + "/nmap-rpc");
-        binaryFilesToCopy.put(R.raw.nse_main, binaryFileLocation + "/nse_main.lua");
+        // Copy the zip file from the raw resources to local storage
+        String zipLoc = copyZipFileToLocalStorage();
 
-        // Copy the files out of the raw resources so they can be executed
-        copyAllBinaryFiles();
+        // Unzip the main fip file
+        unzipMainNmapFile(zipLoc);
+
+        Log.i(TAG, "READY");
     }
 
     @Override
@@ -93,51 +90,87 @@ public class ActivityMain extends Activity {
             btnAnimation.stop();
     }
 
-    private void copyAllBinaryFiles() {
-        // If the binary files don't currently exist copy them out of the raw resources onto the
-        // internal storage of the device since the external storage won't allow us to run the
-        // executable on the Android system
-        Log.wtf(TAG, "Checking binary directory existance...");
-        File file = new File(binaryFileLocation);
+    private String copyZipFileToLocalStorage() {
+        String zipLocation = appDataDirectory + "/android_nmap.zip";
+        File file = new File(zipLocation);
+        Log.d(TAG, "Checking if zip file exists...");
         if (!file.exists()) {
-            Log.wtf(TAG, "Binary directory doesn't exist. Creating directories...");
-            // Create binary directory
-            file.mkdirs();
-            Log.wtf(TAG, "Directories created. Copying files...");
-        } else {
-            Log.wtf(TAG, "Binary directory already exists. Moving on to files.");
-        }
-        Log.wtf(TAG, "Checking binary files existance...");
-        int count = 0;
-        for (Map.Entry<Integer, String> item : binaryFilesToCopy.entrySet()) {
-            count++;
-            file = new File(item.getValue());
-            if (!file.exists()) {
-                Log.wtf(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " doesn't exist.");
-                try {
-                    Log.wtf(TAG, "Copying binary " + count + " out of " + binaryFilesToCopy.size());
-                    copyBinFilesToInternalStorage(item.getKey(), item.getValue());
-                    Log.wtf(TAG, "File copy successful!");
-                } catch (IOException ex) {
-                    Log.wtf(TAG, "Error copying file: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-                try {
-                    Log.wtf(TAG, "Making binary executable...");
-                    Process process = Runtime.getRuntime().exec("chmod 777 " + item.getValue());
-                    process.waitFor();
-                    Log.wtf(TAG, "Binary executable!");
-                } catch (Exception ex) {
-                    Log.wtf(TAG, "Error marking file as executable: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-            } else {
-                Log.wtf(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " already exists. Skipping file copy...");
+            Log.d(TAG, "Zip file doesn't exist yet...");
+            // Copy the zip file from the raw resources to the local Android file system
+            try {
+                Log.d(TAG, "Copying zip file to local storage...");
+                copyBinFileToInternalStorage(R.raw.android_nmap, zipLocation);
+                Log.d(TAG, "Zip file copied!");
+                // set permissions to 666 (Read and Write for everyone) for all files
+                // set permissions to 777 (Read, Write, and Execute for everyone) for main executables
+            } catch (Exception ex) {
+                Log.d(TAG, "Error copying zip file to storage: " + ex.getMessage());
+                ex.printStackTrace();
             }
+            try {
+                Log.d(TAG, "Making zip file readable...");
+                Process process = Runtime.getRuntime().exec("chmod 666 " + zipLocation);
+                process.waitFor();
+                Log.d(TAG, "Zip file readable!");
+            } catch (Exception ex) {
+                Log.d(TAG, "Error marking file as readable: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        } else {
+            Log.d(TAG, "Zip file already exists!");
+        }
+        return zipLocation;
+    }
+
+    private void unzipMainNmapFile(String zipLocation) {
+        // Once here the zip file should be copied
+        // Go ahead and upzip it
+        File file = new File(binaryFileLocation);
+        Log.d(TAG, "Checking if zip file has been extracted...");
+        if (!file.exists()) {
+            Log.d(TAG, "Files have not been extracted. Let's do that now...");
+            try {
+                Log.d(TAG, "Unzipping zip file to local storage...");
+                Utils.unzipFile(new File(zipLocation), new File(appDataDirectory));
+                Log.d(TAG, "File unzipped successfully!");
+            } catch (IOException ex) {
+                Log.e(TAG, "IOException --> Unzipping File --> " + ex.getMessage());
+            } catch (Exception ex) {
+                Log.e(TAG, "Exception --> Unzipping File --> " + ex.getMessage());
+            }
+
+            // Mark all files with read/write permissions using a recursive method
+            try {
+                Log.d(TAG, "Marking files with read/write permissions...");
+                // Mark all files with read/write permissions for everyone
+                markFilePermissionsRW(file);
+                Log.d(TAG, "Success!");
+            } catch (Exception ex) {
+                Log.d(TAG, "XXXXX ERROR --> " + ex.getMessage());
+            }
+            Log.d(TAG, "Done with read/write permissions!");
+
+            // Mark executable files as executable
+            Log.d(TAG, "Now that that's done, let's make the executable files...well...executable");
+            int count = 0;
+            for (Map.Entry<Utils.Executable, String> item : executableFileLocations.entrySet()) {
+                count++;
+                try {
+                    Log.d(TAG, "Marking binary " + count + " of " + executableFileLocations.size() + " as executable...");
+                    Process proc = Runtime.getRuntime().exec("chmod 777 " + item.getValue());
+                    proc.waitFor();
+                    Log.d(TAG, "Binary executable!");
+                } catch (Exception ex) {
+                    Log.d(TAG, "Error marking file as executable: " + ex.getMessage());
+                    ex.printStackTrace();
+                }
+            }
+        } else {
+            Log.d(TAG, "Looks like the zip file has been extracted already...");
         }
     }
 
-    private void copyBinFilesToInternalStorage(int id, String path) throws IOException {
+    private void copyBinFileToInternalStorage(int id, String path) throws IOException {
         InputStream in = this.getResources().openRawResource(id);
         FileOutputStream out = new FileOutputStream(path);
         byte[] buff = new byte[1024];
@@ -152,12 +185,45 @@ public class ActivityMain extends Activity {
         }
     }
 
+    private void markFilePermissionsRW(File fileLocation) throws IOException {
+        if (!fileLocation.exists())
+            throw new IOException("File/Directory does not exist!");
+
+        if (fileLocation.isDirectory()) {
+            File[] files = fileLocation.listFiles();
+            Log.d(TAG, "Setting read/write permissions for " + String.valueOf(files.length) + " files in '" + fileLocation.getAbsolutePath() + "'");
+            try {
+                for (int i = 0; i < files.length; i++) {
+                    if (files[i].isDirectory()) {
+                        markFilePermissionsRW(files[i]);
+                    } else {
+                        Log.v(TAG, "----- Setting read/write permissions for file '" + files[i].getAbsolutePath() + "'");
+                        Process proc  = Runtime.getRuntime().exec("chmod 666 " + files[i].getAbsolutePath());
+                        proc.waitFor();
+                        Log.v(TAG, "----- Success!");
+                    }
+                }
+            } catch (Exception ex) {
+                Log.v(TAG, "XXXXX ERROR --> " + ex.getMessage());
+            }
+        } else {
+            try {
+                Log.v(TAG, "----- Setting read/write permissions for file '" + fileLocation.getAbsolutePath() + "'");
+                Process proc  = Runtime.getRuntime().exec("chmod 666 " + fileLocation.getAbsolutePath());
+                proc.waitFor();
+                Log.v(TAG, "----- Success!");
+            } catch (Exception ex) {
+                Log.v(TAG, "XXXXX ERROR --> " + ex.getMessage());
+            }
+        }
+    }
+
     public void btnScanNetwork_OnClick(View view) {
         startActivity(new Intent(this, ActivityScan.class));
     }
 
-    public void btnNmapTest_OnClick(View view) {
-        startActivity(new Intent(this, ActivityNmapTest.class));
+    public void btnTerminal_OnClick(View view) {
+        startActivity(new Intent(this, ActivityTerminal.class));
     }
 
     public void btnSimpleScan_OnClick(View view) {
