@@ -1,6 +1,7 @@
 package com.example.blackwidow;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -16,16 +17,17 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ActivityMain extends Activity {
+public class ActivityMain extends Activity implements IAsyncZipFileProcessingCallback {
     private static final String TAG = "ActivityMain";
 
     public static  String appDataDirectory;
     public static Map<Utils.Executable, String> executableFileLocations;
     public static String binaryFileLocation;
 
-    Button btnScanNetwork;
-    Button btnSimpleScan;
-    AnimationDrawable btnAnimation;
+    private Button btnScanNetwork;
+    private Button btnSimpleScan;
+    private AnimationDrawable btnAnimation;
+    private ProgressDialog dlgLoading;
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
@@ -67,13 +69,27 @@ public class ActivityMain extends Activity {
         executableFileLocations.put(Utils.Executable.NMAP, binaryFileLocation + "/nmap");
         executableFileLocations.put(Utils.Executable.NPING, binaryFileLocation + "/nping");
 
+        // Set up the progress dialog to show the user that something is happening
+        dlgLoading = new ProgressDialog(this);
+        dlgLoading.setTitle("Please Wait...");
+        dlgLoading.setCancelable(false);
+        dlgLoading.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+
+        dlgLoading.setMessage("Copying zip file to local storage...");
+        dlgLoading.setProgress(5);
+        dlgLoading.show();
         // Copy the zip file from the raw resources to local storage
         String zipLoc = copyZipFileToLocalStorage();
 
-        // Unzip the main fip file
-        unzipMainNmapFile(zipLoc);
+        dlgLoading.setMessage("Unpacking the zip file...");
+        dlgLoading.setProgress(10);
+        // Use the async process task in the Utils class to do this in a separate thread
+        // This way the app can load and just show the user what's going on
+        Utils.ProcessZipFileAsync(this, zipLoc, this);
 
-        Log.i(TAG, "READY");
+        // Unzip the main fip file
+        //unzipMainNmapFile(zipLoc);
+
     }
 
     @Override
@@ -122,54 +138,6 @@ public class ActivityMain extends Activity {
         return zipLocation;
     }
 
-    private void unzipMainNmapFile(String zipLocation) {
-        // Once here the zip file should be copied
-        // Go ahead and upzip it
-        File file = new File(binaryFileLocation);
-        Log.d(TAG, "Checking if zip file has been extracted...");
-        if (!file.exists()) {
-            Log.d(TAG, "Files have not been extracted. Let's do that now...");
-            try {
-                Log.d(TAG, "Unzipping zip file to local storage...");
-                Utils.unzipFile(new File(zipLocation), new File(appDataDirectory));
-                Log.d(TAG, "File unzipped successfully!");
-            } catch (IOException ex) {
-                Log.e(TAG, "IOException --> Unzipping File --> " + ex.getMessage());
-            } catch (Exception ex) {
-                Log.e(TAG, "Exception --> Unzipping File --> " + ex.getMessage());
-            }
-
-            // Mark all files with read/write permissions using a recursive method
-            try {
-                Log.d(TAG, "Marking files with read/write permissions...");
-                // Mark all files with read/write permissions for everyone
-                markFilePermissionsRW(file);
-                Log.d(TAG, "Success!");
-            } catch (Exception ex) {
-                Log.d(TAG, "XXXXX ERROR --> " + ex.getMessage());
-            }
-            Log.d(TAG, "Done with read/write permissions!");
-
-            // Mark executable files as executable
-            Log.d(TAG, "Now that that's done, let's make the executable files...well...executable");
-            int count = 0;
-            for (Map.Entry<Utils.Executable, String> item : executableFileLocations.entrySet()) {
-                count++;
-                try {
-                    Log.d(TAG, "Marking binary " + count + " of " + executableFileLocations.size() + " as executable...");
-                    Process proc = Runtime.getRuntime().exec("chmod 777 " + item.getValue());
-                    proc.waitFor();
-                    Log.d(TAG, "Binary executable!");
-                } catch (Exception ex) {
-                    Log.d(TAG, "Error marking file as executable: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-            }
-        } else {
-            Log.d(TAG, "Looks like the zip file has been extracted already...");
-        }
-    }
-
     private void copyBinFileToInternalStorage(int id, String path) throws IOException {
         InputStream in = this.getResources().openRawResource(id);
         FileOutputStream out = new FileOutputStream(path);
@@ -185,39 +153,6 @@ public class ActivityMain extends Activity {
         }
     }
 
-    private void markFilePermissionsRW(File fileLocation) throws IOException {
-        if (!fileLocation.exists())
-            throw new IOException("File/Directory does not exist!");
-
-        if (fileLocation.isDirectory()) {
-            File[] files = fileLocation.listFiles();
-            Log.d(TAG, "Setting read/write permissions for " + String.valueOf(files.length) + " files in '" + fileLocation.getAbsolutePath() + "'");
-            try {
-                for (int i = 0; i < files.length; i++) {
-                    if (files[i].isDirectory()) {
-                        markFilePermissionsRW(files[i]);
-                    } else {
-                        Log.v(TAG, "----- Setting read/write permissions for file '" + files[i].getAbsolutePath() + "'");
-                        Process proc  = Runtime.getRuntime().exec("chmod 666 " + files[i].getAbsolutePath());
-                        proc.waitFor();
-                        Log.v(TAG, "----- Success!");
-                    }
-                }
-            } catch (Exception ex) {
-                Log.v(TAG, "XXXXX ERROR --> " + ex.getMessage());
-            }
-        } else {
-            try {
-                Log.v(TAG, "----- Setting read/write permissions for file '" + fileLocation.getAbsolutePath() + "'");
-                Process proc  = Runtime.getRuntime().exec("chmod 666 " + fileLocation.getAbsolutePath());
-                proc.waitFor();
-                Log.v(TAG, "----- Success!");
-            } catch (Exception ex) {
-                Log.v(TAG, "XXXXX ERROR --> " + ex.getMessage());
-            }
-        }
-    }
-
     public void btnScanNetwork_OnClick(View view) {
         startActivity(new Intent(this, ActivityScan.class));
     }
@@ -228,5 +163,22 @@ public class ActivityMain extends Activity {
 
     public void btnSimpleScan_OnClick(View view) {
         startActivity(new Intent(this, ActivityNmapMain.class));
+    }
+
+    @Override
+    public void ZipFileProcessingProgressUpdate(int progress, String message) {
+        dlgLoading.setMessage(message);
+        dlgLoading.setProgress(progress);
+    }
+
+    @Override
+    public void ZipFileProcessingCompleted(boolean isError, String message) {
+        if (dlgLoading.isShowing())
+            dlgLoading.dismiss();
+        if (isError)
+            Log.e(TAG, message);
+        else
+            Log.d(TAG, message);
+        Log.i(TAG, "READY");
     }
 }
