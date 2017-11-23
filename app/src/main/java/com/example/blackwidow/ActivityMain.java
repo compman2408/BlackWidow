@@ -1,6 +1,7 @@
 package com.example.blackwidow;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
@@ -16,16 +17,17 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ActivityMain extends Activity {
+public class ActivityMain extends Activity implements IAsyncZipFileProcessingCallback {
     private static final String TAG = "ActivityMain";
 
-    private String _appDataDirectory;
-    public static Map<Integer, String> binaryFilesToCopy;
+    public static  String appDataDirectory;
+    public static Map<Utils.Executable, String> executableFileLocations;
     public static String binaryFileLocation;
 
-    Button btnScanNetwork;
-    Button btnSimpleScan;
-    AnimationDrawable btnAnimation;
+    private Button btnScanNetwork;
+    private Button btnSimpleScan;
+    private AnimationDrawable btnAnimation;
+    private ProgressDialog dlgLoading;
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
@@ -56,27 +58,38 @@ public class ActivityMain extends Activity {
         btnScanNetwork.setBackground(btnAnimation);
 
         // Set the directories to the important stuff
-        _appDataDirectory = getApplicationContext().getFilesDir().getPath();
-        binaryFileLocation = _appDataDirectory + "/bin";
+        appDataDirectory = getApplicationContext().getFilesDir().getPath();
+        // WARNING: The following directory MUST match the directory that is inside the zip file.
+        //          DO NOT change the following directory if the directory in the zip file isn't changed.
+        binaryFileLocation = appDataDirectory + "/bin";
         // Add files to copy
-        binaryFilesToCopy = new HashMap<Integer, String>();
-        binaryFilesToCopy.put(R.raw.ncat64, binaryFileLocation + "/ncat");
-        binaryFilesToCopy.put(R.raw.ndiff64, binaryFileLocation + "/ndiff");
-        binaryFilesToCopy.put(R.raw.nmap64, binaryFileLocation + "/nmap");
-        binaryFilesToCopy.put(R.raw.nping64, binaryFileLocation + "/nping");
-        binaryFilesToCopy.put(R.raw.uninstall_ndiff64, binaryFileLocation + "/uninstall_ndiff");
+        executableFileLocations = new HashMap<>();
+        executableFileLocations.put(Utils.Executable.NCAT, binaryFileLocation + "/ncat");
+        executableFileLocations.put(Utils.Executable.NDIFF, binaryFileLocation + "/ndiff");
+        executableFileLocations.put(Utils.Executable.NMAP, binaryFileLocation + "/nmap");
+        executableFileLocations.put(Utils.Executable.NPING, binaryFileLocation + "/nping");
 
-        binaryFilesToCopy.put(R.raw.nmap_mac_prefixes, binaryFileLocation + "/nmap-mac-prefixes");
-        binaryFilesToCopy.put(R.raw.nmap_os_db, binaryFileLocation + "/nmap-os-db");
-        binaryFilesToCopy.put(R.raw.nmap_payloads, binaryFileLocation + "/nmap-payloads");
-        binaryFilesToCopy.put(R.raw.nmap_service_probes, binaryFileLocation + "/nmap-service-probes");
-        binaryFilesToCopy.put(R.raw.nmap_services, binaryFileLocation + "/nmap-services");
-        binaryFilesToCopy.put(R.raw.nmap_protocols, binaryFileLocation + "/nmap-protocols");
-        binaryFilesToCopy.put(R.raw.nmap_rpc, binaryFileLocation + "/nmap-rpc");
-        binaryFilesToCopy.put(R.raw.nse_main, binaryFileLocation + "/nse_main.lua");
+        // Set up the progress dialog to show the user that something is happening
+        dlgLoading = new ProgressDialog(this);
+        dlgLoading.setTitle("Please Wait...");
+        dlgLoading.setCancelable(false);
+        dlgLoading.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
-        // Copy the files out of the raw resources so they can be executed
-        copyAllBinaryFiles();
+        dlgLoading.setMessage("Copying zip file to local storage...");
+        dlgLoading.setProgress(5);
+        dlgLoading.show();
+        // Copy the zip file from the raw resources to local storage
+        String zipLoc = copyZipFileToLocalStorage();
+
+        dlgLoading.setMessage("Unpacking the zip file...");
+        dlgLoading.setProgress(10);
+        // Use the async process task in the Utils class to do this in a separate thread
+        // This way the app can load and just show the user what's going on
+        Utils.ProcessZipFileAsync(this, zipLoc, this);
+
+        // Unzip the main fip file
+        //unzipMainNmapFile(zipLoc);
+
     }
 
     @Override
@@ -93,51 +106,39 @@ public class ActivityMain extends Activity {
             btnAnimation.stop();
     }
 
-    private void copyAllBinaryFiles() {
-        // If the binary files don't currently exist copy them out of the raw resources onto the
-        // internal storage of the device since the external storage won't allow us to run the
-        // executable on the Android system
-        Log.wtf(TAG, "Checking binary directory existance...");
-        File file = new File(binaryFileLocation);
+    private String copyZipFileToLocalStorage() {
+        String zipLocation = appDataDirectory + "/android_nmap.zip";
+        File file = new File(zipLocation);
+        Log.d(TAG, "Checking if zip file exists...");
         if (!file.exists()) {
-            Log.wtf(TAG, "Binary directory doesn't exist. Creating directories...");
-            // Create binary directory
-            file.mkdirs();
-            Log.wtf(TAG, "Directories created. Copying files...");
-        } else {
-            Log.wtf(TAG, "Binary directory already exists. Moving on to files.");
-        }
-        Log.wtf(TAG, "Checking binary files existance...");
-        int count = 0;
-        for (Map.Entry<Integer, String> item : binaryFilesToCopy.entrySet()) {
-            count++;
-            file = new File(item.getValue());
-            if (!file.exists()) {
-                Log.wtf(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " doesn't exist.");
-                try {
-                    Log.wtf(TAG, "Copying binary " + count + " out of " + binaryFilesToCopy.size());
-                    copyBinFilesToInternalStorage(item.getKey(), item.getValue());
-                    Log.wtf(TAG, "File copy successful!");
-                } catch (IOException ex) {
-                    Log.wtf(TAG, "Error copying file: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-                try {
-                    Log.wtf(TAG, "Making binary executable...");
-                    Process process = Runtime.getRuntime().exec("chmod 777 " + item.getValue());
-                    process.waitFor();
-                    Log.wtf(TAG, "Binary executable!");
-                } catch (Exception ex) {
-                    Log.wtf(TAG, "Error marking file as executable: " + ex.getMessage());
-                    ex.printStackTrace();
-                }
-            } else {
-                Log.wtf(TAG, "Binary " + count + " out of " + binaryFilesToCopy.size() + " already exists. Skipping file copy...");
+            Log.d(TAG, "Zip file doesn't exist yet...");
+            // Copy the zip file from the raw resources to the local Android file system
+            try {
+                Log.d(TAG, "Copying zip file to local storage...");
+                copyBinFileToInternalStorage(R.raw.android_nmap, zipLocation);
+                Log.d(TAG, "Zip file copied!");
+                // set permissions to 666 (Read and Write for everyone) for all files
+                // set permissions to 777 (Read, Write, and Execute for everyone) for main executables
+            } catch (Exception ex) {
+                Log.d(TAG, "Error copying zip file to storage: " + ex.getMessage());
+                ex.printStackTrace();
             }
+            try {
+                Log.d(TAG, "Making zip file readable...");
+                Process process = Runtime.getRuntime().exec("chmod 666 " + zipLocation);
+                process.waitFor();
+                Log.d(TAG, "Zip file readable!");
+            } catch (Exception ex) {
+                Log.d(TAG, "Error marking file as readable: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        } else {
+            Log.d(TAG, "Zip file already exists!");
         }
+        return zipLocation;
     }
 
-    private void copyBinFilesToInternalStorage(int id, String path) throws IOException {
+    private void copyBinFileToInternalStorage(int id, String path) throws IOException {
         InputStream in = this.getResources().openRawResource(id);
         FileOutputStream out = new FileOutputStream(path);
         byte[] buff = new byte[1024];
@@ -156,11 +157,28 @@ public class ActivityMain extends Activity {
         startActivity(new Intent(this, ActivityScan.class));
     }
 
-    public void btnNmapTest_OnClick(View view) {
-        startActivity(new Intent(this, ActivityNmapTest.class));
+    public void btnTerminal_OnClick(View view) {
+        startActivity(new Intent(this, ActivityTerminal.class));
     }
 
     public void btnSimpleScan_OnClick(View view) {
         startActivity(new Intent(this, ActivityNmapMain.class));
+    }
+
+    @Override
+    public void ZipFileProcessingProgressUpdate(int progress, String message) {
+        dlgLoading.setMessage(message);
+        dlgLoading.setProgress(progress);
+    }
+
+    @Override
+    public void ZipFileProcessingCompleted(boolean isError, String message) {
+        if (dlgLoading.isShowing())
+            dlgLoading.dismiss();
+        if (isError)
+            Log.e(TAG, message);
+        else
+            Log.d(TAG, message);
+        Log.i(TAG, "READY");
     }
 }
