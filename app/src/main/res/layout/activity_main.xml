@@ -19,8 +19,7 @@
         android:id="@+id/btnScanNetwork"
         android:layout_width="200dp"
         android:layout_height="100dp"
-        android:layout_centerVertical="true"
-        android:layout_toStartOf="@+id/btnSimpleScan"
+        android:layout_centerInParent="true"
         android:background="@drawable/btn_scan_frame0"
         android:elevation="10dp"
         android:onClick="btnScanNetwork_OnClick"
@@ -30,20 +29,20 @@
         android:textStyle="bold"/>
 
     <Button
-        android:id="@+id/btnNmapTest"
+        android:id="@+id/btnTerminal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
         android:layout_alignParentBottom="true"
-        android:text="Nmap"
-        android:onClick="btnNmapTest_OnClick"/>
+        android:layout_alignParentStart="true"
+        android:onClick="btnTerminal_OnClick"
+        android:text="Terminal"/>
 
     <Button
-        android:id="@+id/btnSimpleScan"
+        android:id="@+id/btnEZScan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/btnNmapTest"
+        android:layout_alignParentBottom="true"
+        android:layout_toEndOf="@+id/btnScanNetwork"
         android:onClick="btnSimpleScan_OnClick"
         android:text="EZ Scan"/>
 
