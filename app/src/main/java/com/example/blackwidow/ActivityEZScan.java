@@ -26,7 +26,9 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     private static final String[] SCANTYPES = new String[]{"REGULAR SCAN", "TCP SYN SCAN", "TCP NULL SCAN"};
     private static final String[] SCANTYPEARGS = new String[]{"", "-sS", "-sN"};
     private static final String[] OPTIONTYPES = new String[]{"UDP SCAN", "OS DETECTION", "FAST", "OPEN PORT SCAN", "VERBOSE", "TIMING TEMPLATE", "TRACEROUTE"};
-    private static final String[] OPTIONARGS = new String[]{"-sU", "-O", "-F", "-sV", "-v", "-T4", "-traceroute"};
+    private static final String[] OPTIONARGS = new String[]{"-sU", "-A", "-F", "-sV", "-v", "-T4", "-traceroute"};
+    private static final int SCANTYPEINDEX = 0;
+    private static final int OPTIONTYPEINDEX = 1;
 
     EditText _txtIPAddress;
     Button _btnScanNmap;
@@ -36,7 +38,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     private ExpandableListView listView;
     private ExpandableListAdapter listAdapter;
     private List<String> listDataHeader;
-    private HashMap<String, List<String>> listHash;
+    private HashMap<String, List<ListItem>> listHash;
     public static HashMap<String, String> argMap;
     boolean[] optionsArr;
     String scanType;
@@ -58,42 +60,40 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         initData();
         listAdapter = new ExpandableListAdapter(this, listDataHeader, listHash);
         listView.setAdapter(listAdapter);
-        listView.expandGroup(0);
-
-        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            View _lastScanTypeSelected;
-
+        listView.expandGroup(SCANTYPEINDEX);
+        listView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                Log.wtf("CLICK", "CLICK " + groupPosition + " " + childPosition);
-                if (groupPosition == 0) { //for SCAN TYPES
-                    scanType = SCANTYPES[childPosition]; //set the new option
-
-                    Log.wtf("CLICK", "CLICK " + v);
-                    if (_lastScanTypeSelected != null) {
-                        ((LinearLayout) _lastScanTypeSelected).getChildAt(0).setBackgroundColor(Color.WHITE);
-                    }
-                    ((LinearLayout) v).getChildAt(0).setBackgroundColor(Color.parseColor("#ff202f"));
-                    _lastScanTypeSelected = v;
-
-                } else if (groupPosition == 1) { //for OPTIONS
-                    optionsArr[childPosition] = !optionsArr[childPosition];
-                    printOptionsArrayLog();
-
-                    if (optionsArr[childPosition]) {
-                        ((LinearLayout) v).getChildAt(0).setBackgroundColor(Color.parseColor("#ff202f"));
-                    } else {
-                        ((LinearLayout) v).getChildAt(0).setBackgroundColor(Color.WHITE);
-                    }
-                }
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                Log.wtf("CLICK", "GROUP CLICK " + groupPosition);
                 return false;
             }
+        });
+
+        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            ListItem _lastScanTypeSelected = (ListItem) listAdapter.getChild(SCANTYPEINDEX,0); //initial scan type is regular (no args)
+             @Override
+             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                 Log.wtf("CLICK", "CHILD CLICK " + groupPosition + " " + childPosition);
+                 if (groupPosition == SCANTYPEINDEX) { //for SCAN TYPES
+                     scanType = SCANTYPES[childPosition]; //update the type of scan to perform
+                     if (_lastScanTypeSelected != null) {
+                         _lastScanTypeSelected.toggleSelected();
+                     }
+                     ((ListItem) listAdapter.getChild(groupPosition, childPosition)).setSelected(true);
+                     _lastScanTypeSelected = (ListItem) listAdapter.getChild(groupPosition, childPosition);
+                 } else if  (groupPosition == OPTIONTYPEINDEX) { //for OPTIONS
+                     optionsArr[childPosition] = !optionsArr[childPosition]; //update the option selection boolean here
+                     ((ListItem) listAdapter.getChild(groupPosition, childPosition)).toggleSelected(); //update the option selection boolean in the data bound to the view
+                 }
+                 listAdapter.notifyDataSetChanged(); //refresh view
+                 return false;
+             }
         });
     }
 
     private void initData() {
         optionsArr = new boolean[7]; //initialize options to false
-        scanType = SCANTYPES[0];
+        scanType = SCANTYPES[0]; //Set scan type to Regular scan
 
         argMap = new HashMap<>();
 
@@ -103,15 +103,19 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         listDataHeader.add("SCAN TYPE");
         listDataHeader.add("OPTIONS");
 
-        List<String> lstScanTypes = new ArrayList<>();
+        List<ListItem> lstScanTypes = new ArrayList<>();
         for (int i = 0; i < SCANTYPES.length; i++) {
-            lstScanTypes.add(SCANTYPES[i]);
+            if (i == 0) {
+                lstScanTypes.add(new ListItem(SCANTYPES[i], true));
+            } else {
+                lstScanTypes.add(new ListItem(SCANTYPES[i], false));
+            }
             argMap.put(SCANTYPES[i], SCANTYPEARGS[i]);
         }
 
-        List<String> lstScanOptions = new ArrayList<>();
+        List<ListItem> lstScanOptions = new ArrayList<>();
         for (int i = 0; i < OPTIONTYPES.length; i++) {
-            lstScanOptions.add(OPTIONTYPES[i]);
+            lstScanOptions.add(new ListItem(OPTIONTYPES[i], false));
             argMap.put(OPTIONTYPES[i], OPTIONARGS[i]);
         }
 
