@@ -1,8 +1,12 @@
 package com.example.blackwidow;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +20,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.example.blackwidow.PhoneDB.*;
 
 /**
  * Created by Bobak on 11/19/2017.
@@ -43,6 +49,8 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     boolean[] optionsArr;
     String scanType;
     String cmdString;
+    public String scanName;
+    public boolean osFingerPrinted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,5 +187,47 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     public void btnScanNmap_OnClick(View view) {
         cmdString = generateCommandFromOptions();
         runCommandInCLIAsync(ActivityMain.executableFileLocations.get(Utils.Executable.NMAP) + " " + cmdString);
+    }
+
+    public void btnSaveResults_OnClick(View view) {
+        //TODO: Parse Nmap output and feed into DB classes
+
+        // pops up dialog to name scan
+        saveScanName(this);
+
+        String scanID = InsertScanIntoDB(this,scanName);
+        // TODO use parser to fill the null values in. this will probably be done in a loop for all scanned hosts
+        String hostID = InsertHostIntoDB(this,null,null,null,null,scanID);
+        if (osFingerPrinted) {
+            InsertExploitIntoDB(this, null, null, hostID);
+        }
+
+
+        Log.d(TAG,"Scan Results Saved");
+    }
+
+    // Names scan
+    public void saveScanName(Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Save Results -- choose name");
+
+        final EditText input = new EditText(context);
+        builder.setView(input);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                scanName = input.getText().toString();
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
     }
 }

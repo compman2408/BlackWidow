@@ -16,30 +16,34 @@ public class DataHelper extends SQLiteOpenHelper {
     private static final String TAG = "DataHelperClass";
 
     // Database Name
-    private static final String DB_NAME = "mmdb.db";
+    private static final String DB_NAME = "nmap.db";
 
     // Database Version
     private static final int DB_VERSION = 1;
 
     // Database Tables
-    public static final String TBL_MOVIES = "Movies";
-    public static final String TBL_FORMATS = "Formats";
-    public static final String TBL_MOVIE_FORMAT = "MovieFormat";
+    public static final String SCANS = "Scans";
+    public static final String HOSTS = "Hosts";
+    public static final String EXPLOITS = "Exploits";
 
-    // Movies Table Columns
-    public static final String TBL_MOVIES_NAME = "Name";
-    public static final String TBL_MOVIES_UPC = "UPC";
-    public static final String TBL_MOVIES_PPC = "PPC";
-    public static final String TBL_MOVIES_CREATED = "Created";
+    // Scans Table Columns
+    public static final String SCAN_ID = "Id";
+    public static final String SCAN_NAME = "Scan_Name";
+    public static final String SCAN_TIME_STAMP = "Time_Stamp";
 
-    // Formats Table Columns
-    public static final String TBL_FORMATS_NAME = "Name";
-    public static final String TBL_FORMATS_CREATED = "Created";
+    // Hosts Table Columns
+    public static final String HOST_ID = "Host_Id";
+    public static final String HOST_SCAN_FKID = "Scan_FkId";
+    public static final String HOST_IP = "ip";
+    public static final String HOST_NAME = "Host_Name";
+    public static final String HOST_OS = "Os";
+    public static final String HOST_OPEN_PORTS = "Open_Ports";
 
-    // MovieFormat Table Columns
-    public static final String TBL_MOVIE_FORMAT_MOVIE_ID = "MovieID";
-    public static final String TBL_MOVIE_FORMAT_FORMAT_ID = "FormatID";
-    public static final String TBL_MOVIE_FORMAT_CREATED = "Created";
+    // Exploits Table Columns
+    public static final String EXPLOIT_ID = "Exploit_Id";
+    public static final String EXPLOIT_HOST_FKID = "Host_FkId";
+    public static final String EXPLOIT_NAME = "Exploit_Name";
+    public static final String EXPLOIT_DESCRIPTION = "Description";
 
     // Common table columns
     public static final String TBL_ID = "_id";
@@ -54,27 +58,31 @@ public class DataHelper extends SQLiteOpenHelper {
         Log.d(TAG, "Apparently the database hasn't been created yet. Guess I should probably do that now...");
 
         // Create Table SQL Statements
-        final String TBL_MOVIES_CREATE = "CREATE TABLE " + TBL_MOVIES + " (" + TBL_ID + " integer primary key autoincrement, " +
-                TBL_MOVIES_NAME + " text, " +
-                TBL_MOVIES_UPC + " text, " +
-                TBL_MOVIES_PPC + " text, " +
-                TBL_MOVIES_CREATED + " integer)";
+        final String SCANS_TABLE_CREATE = "CREATE TABLE " + SCANS + " (" +
+                SCAN_ID + " integer primary key autoincrement, " +
+                SCAN_NAME + " text, " +
+                SCAN_TIME_STAMP + " text)";
 
         // Create Table SQL Statements
-        final String TBL_FORMATS_CREATE = "CREATE TABLE " + TBL_FORMATS + " (" + TBL_ID + " integer primary key autoincrement, " +
-                TBL_FORMATS_NAME + " text, " +
-                TBL_FORMATS_CREATED + " integer)";
+        final String HOSTS_TABLE_CREATE = "CREATE TABLE " + HOSTS + " (" +
+                HOST_ID + " integer primary key autoincrement, " +
+                HOST_IP + " text, " +
+                HOST_NAME + " text, " +
+                HOST_OPEN_PORTS + " text, " +
+                HOST_OS + " text, " +
+                HOST_SCAN_FKID + " integer, foreign key(Scan_FkId) references Scans(Id))";
 
         // Create Table SQL Statements
-        final String TBL_MOVIE_FORMAT_CREATE = "CREATE TABLE " + TBL_MOVIE_FORMAT + " (" + TBL_ID + " integer primary key autoincrement, " +
-                TBL_MOVIE_FORMAT_MOVIE_ID + " integer, " +
-                TBL_MOVIE_FORMAT_FORMAT_ID + " integer, " +
-                TBL_MOVIE_FORMAT_CREATED + " integer)";
+        final String EXPLOITS_TABLE_CREATE = "CREATE TABLE " + EXPLOITS + " (" +
+                EXPLOIT_ID + " integer primary key autoincrement, " +
+                EXPLOIT_NAME + " text, " +
+                EXPLOIT_DESCRIPTION + " text, " +
+                EXPLOIT_HOST_FKID + " integer, foreign key(Host_FkId) references Hosts(Host_Id))";
 
         // Create the database tables
-        db.execSQL(TBL_MOVIES_CREATE);
-        db.execSQL(TBL_FORMATS_CREATE);
-        db.execSQL(TBL_MOVIE_FORMAT_CREATE);
+        db.execSQL(SCANS_TABLE_CREATE);
+        db.execSQL(HOSTS_TABLE_CREATE);
+        db.execSQL(EXPLOITS_TABLE_CREATE);
     }
 
     @Override

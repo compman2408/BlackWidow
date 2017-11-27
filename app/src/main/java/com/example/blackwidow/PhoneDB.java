@@ -15,91 +15,70 @@ import java.util.Calendar;
 
 public class PhoneDB {
     private static final String TAG = "PhoneDB";
-/*
-    public static void InsertMovieIntoDB(Context context, Movie movie) {
-        if (movie.GetID() != -1) {
-            throw new IllegalArgumentException("Movie appears to already have been inserted into the database.");
-        }
+
+    public static String InsertScanIntoDB(Context context, String scanName) {
         DataHelper data = new DataHelper(context);
         SQLiteDatabase database = data.getWritableDatabase();
-
         ContentValues values = new ContentValues();
-        values.put(DataHelper.TBL_MOVIES_NAME, movie.GetName());
-        values.put(DataHelper.TBL_MOVIES_UPC, movie.GetUPC());
-        values.put(DataHelper.TBL_MOVIES_PPC, movie.GetPPC());
-        long updatedTime = Calendar.getInstance().getTime().getTime();
-        movie.SetCreatedTime(updatedTime);
-        values.put(DataHelper.TBL_MOVIES_CREATED, updatedTime);
+        Long tsLong = System.currentTimeMillis()/1000;
 
-        long insertId = database.insert(DataHelper.TBL_MOVIES, null, values);
-        movie.SetID(insertId);
+        values.put(DataHelper.SCAN_NAME, scanName);
+        values.put(DataHelper.SCAN_TIME_STAMP, tsLong.toString());
 
-        if (movie.GetID() != 0) {
-            Log.d(TAG, "A new movie has been added with an ID of " + insertId);
-            for (int i = 0; i < movie.GetFormats().size(); i++) {
-                Format item = movie.GetFormats().get(i);
-                ContentValues values2 = new ContentValues();
-                values2.put(DataHelper.TBL_MOVIE_FORMAT_FORMAT_ID, item.GetID());
-                values2.put(DataHelper.TBL_MOVIE_FORMAT_MOVIE_ID, movie.GetID());
-                values2.put(DataHelper.TBL_MOVIE_FORMAT_CREATED, updatedTime);
+        database.close();
+        return values.get(DataHelper.SCAN_ID).toString();
 
-                long insertID2 = database.insert(DataHelper.TBL_MOVIE_FORMAT, null, values2);
-                item.SetID(insertID2);
-            }
-        } else {
-            Log.d(TAG, "A new movie has attempted to be added, but was unsuccessful.");
+    }
+
+    public static String InsertHostIntoDB(Context context, String hostName, String ip, String os, String openPorts, String scanId) {
+        /*
+        if (device.GetID() != -1) {
+            throw new IllegalArgumentException("Host appears to already have been inserted into the database.");
         }
+        */
+        DataHelper data = new DataHelper(context);
+        SQLiteDatabase database = data.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(DataHelper.HOST_NAME, hostName);
+        values.put(DataHelper.HOST_IP, ip);
+        values.put(DataHelper.HOST_OS, os);
+        values.put(DataHelper.HOST_OPEN_PORTS, openPorts);
+        values.put(DataHelper.HOST_SCAN_FKID, scanId);
+
+        database.close();
+        return values.get(DataHelper.HOST_ID).toString();
+
+    }
+
+    public static void InsertExploitIntoDB(Context context, String name, String description, String hostId) {
+
+        DataHelper data = new DataHelper(context);
+        SQLiteDatabase database = data.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(DataHelper.EXPLOIT_NAME, name);
+        values.put(DataHelper.EXPLOIT_DESCRIPTION, description);
+        values.put(DataHelper.EXPLOIT_HOST_FKID, hostId);
 
         database.close();
     }
 
-    public static void InsertFormatIntoDB(Context context, Format format) {
-        if (format.GetID() != -1) {
-            throw new IllegalArgumentException("Format appears to already have been inserted into the database.");
-        }
-        DataHelper data = new DataHelper(context);
-        SQLiteDatabase database = data.getWritableDatabase();
-
-        ContentValues values = new ContentValues();
-        values.put(DataHelper.TBL_FORMATS_NAME, format.GetName());
-        long updatedTime = Calendar.getInstance().getTime().getTime();
-        format.SetCreatedTime(updatedTime);
-        values.put(DataHelper.TBL_FORMATS_CREATED, updatedTime);
-
-        long insertId = database.insert(DataHelper.TBL_FORMATS, null, values);
-        format.SetID(insertId);
-        database.close();
-    }
-
-    public static void InsertFormatIntoDB(Context context, Format format, SQLiteDatabase db) {
-        if (format.GetID() != -1) {
-            throw new IllegalArgumentException("Format appears to already have been inserted into the database.");
-        }
-
-        ContentValues values = new ContentValues();
-        values.put(DataHelper.TBL_FORMATS_NAME, format.GetName());
-        long updatedTime = Calendar.getInstance().getTime().getTime();
-        format.SetCreatedTime(updatedTime);
-        values.put(DataHelper.TBL_FORMATS_CREATED, updatedTime);
-
-        long insertId = db.insert(DataHelper.TBL_FORMATS, null, values);
-        format.SetID(insertId);
-    }
-
-    public static List<Movie> GetMoviesFromDB(Context context) {
-        Log.d(TAG, "Getting movies from db...");
+    // currently working here
+    public static ArrayList<Scan> GetScansFromDB(Context context) {
+        Log.d(TAG, "Getting Scans from db...");
         DataHelper data = new DataHelper(context);
         Log.d(TAG, "Getting database...");
         SQLiteDatabase database = data.getWritableDatabase();
-        List<Movie> movies = new ArrayList();
+        ArrayList<Scan> Scans = new ArrayList();
 
         Log.d(TAG, "Querying db...");
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.TBL_MOVIES, null);
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.SCANS, null);
 
         Log.d(TAG, "Iterating through cursor...");
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Movie newMovie = GetMovieFromCursor(cursor);
+            Scan newScan = GetMovieFromCursor(cursor);
             //newMovie.SetFormats(GetFormatsForMovie(context, newMovie, database));
             movies.add(newMovie);
             cursor.moveToNext();
@@ -115,7 +94,7 @@ public class PhoneDB {
         SQLiteDatabase database = data.getWritableDatabase();
         List<Format> formats = new ArrayList();
 
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.TBL_FORMATS, null);
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.HOSTS, null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -134,7 +113,7 @@ public class PhoneDB {
         SQLiteDatabase database = data.getWritableDatabase();
         List<Format> formats = new ArrayList();
 
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.TBL_FORMATS + " f JOIN " + DataHelper.TBL_MOVIE_FORMAT + " mf ON mf." + DataHelper.TBL_MOVIE_FORMAT_FORMAT_ID + "=f." + DataHelper.TBL_ID + " WHERE mf." + DataHelper.TBL_MOVIE_FORMAT_MOVIE_ID + "=" + String.valueOf(movie.GetID()), null);
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.HOSTS + " f JOIN " + DataHelper.EXPLOITS + " mf ON mf." + DataHelper.HOST_FKID + "=f." + DataHelper.TBL_ID + " WHERE mf." + DataHelper.EXPLOIT_ID + "=" + String.valueOf(movie.GetID()), null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -151,7 +130,7 @@ public class PhoneDB {
         Log.d(TAG, "Getting formats for movie '" + movie.GetName() + "' with open db...");
         List<Format> formats = new ArrayList();
 
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DataHelper.TBL_FORMATS + " f JOIN " + DataHelper.TBL_MOVIE_FORMAT + " mf ON mf." + DataHelper.TBL_MOVIE_FORMAT_FORMAT_ID + "=f." + DataHelper.TBL_ID + " WHERE mf." + DataHelper.TBL_MOVIE_FORMAT_MOVIE_ID + "=" + String.valueOf(movie.GetID()), null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DataHelper.HOSTS + " f JOIN " + DataHelper.EXPLOITS + " mf ON mf." + DataHelper.HOST_FKID + "=f." + DataHelper.TBL_ID + " WHERE mf." + DataHelper.EXPLOIT_ID + "=" + String.valueOf(movie.GetID()), null);
 
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
@@ -163,24 +142,43 @@ public class PhoneDB {
 
     //region Cursors for data retrieval
     // Use this function to get a HistoryItem object out of a cursor
-    private static Movie GetMovieFromCursor(Cursor cursor) {
-        Movie movieItem = new Movie();
-        movieItem.SetID(cursor.getLong(cursor.getColumnIndex(DataHelper.TBL_ID)));
-        movieItem.SetName(cursor.getString(cursor.getColumnIndex(DataHelper.TBL_MOVIES_NAME)));
-        movieItem.SetUPC(cursor.getString(cursor.getColumnIndex(DataHelper.TBL_MOVIES_UPC)));
-        movieItem.SetPPC(cursor.getString(cursor.getColumnIndex(DataHelper.TBL_MOVIES_PPC)));
-        movieItem.SetCreatedTime(cursor.getLong(cursor.getColumnIndex(DataHelper.TBL_MOVIES_CREATED)));
-        return movieItem;
+    private static Scan GetScanFromCursor(Cursor cursor) {
+        Scan ScanItem = new Scan(null,null,null,null);
+
+        String id = cursor.getString(cursor.getColumnIndex(DataHelper.SCAN_ID));
+        ScanItem.setId(id);
+        ScanItem.setName(cursor.getString(cursor.getColumnIndex(DataHelper.SCAN_NAME)));
+        ScanItem.setTimeStamp(cursor.getString(cursor.getColumnIndex(DataHelper.SCAN_TIME_STAMP)));
+
+
+
+        return DeviceItem;
     }
 
-    // Use this function to get a Format object out of a cursor
-    private static Format GetFormatFromCursor(Cursor cursor) {
-        Format format = new Format();
-        format.SetID(cursor.getLong(cursor.getColumnIndex(DataHelper.TBL_ID)));
-        format.SetName(cursor.getString(cursor.getColumnIndex(DataHelper.TBL_FORMATS_NAME)));
-        format.SetCreatedTime(cursor.getLong(cursor.getColumnIndex(DataHelper.TBL_FORMATS_CREATED)));
-        return format;
+    private static Device GetHostFromCursor(Cursor cursor) {
+        Device hostItem = new Device(null,null,null,null,null);
+
+
+        return null;
     }
-    //endregion
-*/
+
+    //
+    private static ArrayList<Exploit> GetExploitsFromHostId(Context context, String HostId) {
+        Exploit exploitItem = new Exploit(null,null,null);
+        DataHelper data = new DataHelper(context);
+        SQLiteDatabase database = data.getWritableDatabase();
+        ArrayList<Exploit> exploits = new ArrayList<Exploit>();
+
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.EXPLOITS + " WHERE Host_FkId=\'" + HostId + "\'", null);
+        while (!cursor.isAfterLast()) {
+            exploitItem.setId(cursor.getString(cursor.getColumnIndex(DataHelper.EXPLOIT_ID)));
+            exploitItem.setName(cursor.getString(cursor.getColumnIndex(DataHelper.EXPLOIT_NAME)));
+            exploitItem.setDescription(cursor.getString(cursor.getColumnIndex(DataHelper.EXPLOIT_DESCRIPTION)));
+            exploits.add(exploitItem);
+
+
+        return exploits;
+    }
+
+
 }
