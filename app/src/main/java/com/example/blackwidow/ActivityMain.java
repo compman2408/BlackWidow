@@ -25,7 +25,7 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
     public static String binaryFileLocation;
 
     private Button btnScanNetwork;
-    private Button btnSimpleScan;
+    private Button btnEZScan;
     private AnimationDrawable btnAnimation;
     private ProgressDialog dlgLoading;
 
@@ -49,7 +49,7 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
         TextView tv = (TextView) findViewById(R.id.sample_text);
         tv.setText(stringFromJNI());
 
-        btnSimpleScan = (Button) findViewById(R.id.btnSimpleScan);
+        btnEZScan = (Button) findViewById(R.id.btnEZScan);
         // Start the scan button animation
         btnScanNetwork = (Button) findViewById(R.id.btnScanNetwork);
 //        btnAnimation = (AnimationDrawable) btnScanNetwork.getBackground();
@@ -162,7 +162,7 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
     }
 
     public void btnSimpleScan_OnClick(View view) {
-        startActivity(new Intent(this, ActivityNmapMain.class));
+        this.startActivity(new Intent(this, ActivityEZScan.class));
     }
 
     @Override

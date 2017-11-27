@@ -29,7 +29,7 @@
             android:name=".ActivityScan"
             android:label="@string/activity_scan_label" />
         <activity android:name=".ActivityTerminal"></activity>
-        <activity android:name=".ActivityNmapMain"/>
+        <activity android:name=".ActivityEZScan"></activity>
     </application>
 
 </manifest>
