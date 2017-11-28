@@ -1,5 +1,8 @@
 package com.example.blackwidow;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 /**
  * Created by Alex on 11/27/2017.
  */
@@ -9,9 +12,9 @@ public class Scan {
         private String _id;
         private String _name;
         private String _timeStamp;
-        private Device[] _deviceList;
+        private ArrayList<Device> _deviceList;
 
-        public Scan(String id, String name, String timeStamp, Device[] deviceList) {
+        public Scan(String id, String name, String timeStamp, ArrayList<Device> deviceList) {
             _id = id;
             _name = name;
             _timeStamp = timeStamp;
@@ -28,7 +31,7 @@ public class Scan {
 
         public String getTimeStamp() { return _timeStamp; }
 
-        public Device[] getDevices() { return _deviceList; }
+        public ArrayList<Device> getDevices() { return _deviceList; }
 
         // Setters
         public void setId(String id) { _id = id; }
@@ -37,7 +40,5 @@ public class Scan {
 
         public void setTimeStamp(String timeStamp) { _timeStamp = timeStamp; }
 
-        public void setDeviceList(Device[] deviceList) { _deviceList = deviceList; }
-
-
+        public void setDeviceList(ArrayList<Device> deviceList) { _deviceList = deviceList; }
 }

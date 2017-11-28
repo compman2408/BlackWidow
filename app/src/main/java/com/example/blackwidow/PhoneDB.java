@@ -70,7 +70,7 @@ public class PhoneDB {
         DataHelper data = new DataHelper(context);
         Log.d(TAG, "Getting database...");
         SQLiteDatabase database = data.getWritableDatabase();
-        ArrayList<Scan> Scans = new ArrayList();
+        ArrayList<Scan> scans = new ArrayList();
 
         Log.d(TAG, "Querying db...");
         Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.SCANS, null);
@@ -78,105 +78,79 @@ public class PhoneDB {
         Log.d(TAG, "Iterating through cursor...");
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            Scan newScan = GetMovieFromCursor(cursor);
+            Scan newScan = GetScanFromCursor(context,cursor);
             //newMovie.SetFormats(GetFormatsForMovie(context, newMovie, database));
-            movies.add(newMovie);
+            scans.add(newScan);
             cursor.moveToNext();
         }
         // make sure to close the cursor
         cursor.close();
         database.close();
-        return movies;
+        return scans;
     }
 
-    public static List<Format> GetAllFormatsFromDB(Context context) {
-        DataHelper data = new DataHelper(context);
-        SQLiteDatabase database = data.getWritableDatabase();
-        List<Format> formats = new ArrayList();
-
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.HOSTS, null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            formats.add(GetFormatFromCursor(cursor));
-            cursor.moveToNext();
-        }
-        // make sure to close the cursor
-        cursor.close();
-        database.close();
-        return formats;
-    }
-
-    public static List<Format> GetFormatsForMovie(Context context, Movie movie) {
-        Log.d(TAG, "Getting formats for movie '" + movie.GetName() + "'...");
-        DataHelper data = new DataHelper(context);
-        SQLiteDatabase database = data.getWritableDatabase();
-        List<Format> formats = new ArrayList();
-
-        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.HOSTS + " f JOIN " + DataHelper.EXPLOITS + " mf ON mf." + DataHelper.HOST_FKID + "=f." + DataHelper.TBL_ID + " WHERE mf." + DataHelper.EXPLOIT_ID + "=" + String.valueOf(movie.GetID()), null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            formats.add(GetFormatFromCursor(cursor));
-            cursor.moveToNext();
-        }
-        // make sure to close the cursor
-        cursor.close();
-        database.close();
-        return formats;
-    }
-
-    public static List<Format> GetFormatsForMovie(Context context, Movie movie, SQLiteDatabase db) {
-        Log.d(TAG, "Getting formats for movie '" + movie.GetName() + "' with open db...");
-        List<Format> formats = new ArrayList();
-
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DataHelper.HOSTS + " f JOIN " + DataHelper.EXPLOITS + " mf ON mf." + DataHelper.HOST_FKID + "=f." + DataHelper.TBL_ID + " WHERE mf." + DataHelper.EXPLOIT_ID + "=" + String.valueOf(movie.GetID()), null);
-
-        cursor.moveToFirst();
-        while (!cursor.isAfterLast()) {
-            formats.add(GetFormatFromCursor(cursor));
-            cursor.moveToNext();
-        }
-        return formats;
-    }
 
     //region Cursors for data retrieval
     // Use this function to get a HistoryItem object out of a cursor
-    private static Scan GetScanFromCursor(Cursor cursor) {
+    private static Scan GetScanFromCursor(Context context, Cursor cursor) {
+
         Scan ScanItem = new Scan(null,null,null,null);
 
         String id = cursor.getString(cursor.getColumnIndex(DataHelper.SCAN_ID));
         ScanItem.setId(id);
         ScanItem.setName(cursor.getString(cursor.getColumnIndex(DataHelper.SCAN_NAME)));
         ScanItem.setTimeStamp(cursor.getString(cursor.getColumnIndex(DataHelper.SCAN_TIME_STAMP)));
+        ScanItem.setDeviceList(GetHostsFromScanId(context,id));
 
-
-
-        return DeviceItem;
+        return ScanItem;
     }
 
-    private static Device GetHostFromCursor(Cursor cursor) {
-        Device hostItem = new Device(null,null,null,null,null);
+    private static ArrayList<Device> GetHostsFromScanId(Context context, String scanId) {
 
+        Device hostItem = new Device(null,null,null,null,null,null);
+        DataHelper data = new DataHelper(context);
+        SQLiteDatabase database = data.getWritableDatabase();
+        ArrayList<Device> hosts = new ArrayList<Device>();
+        Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.HOSTS + " WHERE Scan_FkId=\'" + scanId + "\'", null);
 
-        return null;
+        while (!cursor.isAfterLast()) {
+            String id = cursor.getString(cursor.getColumnIndex(DataHelper.HOST_ID));
+            hostItem.setId(id);
+            hostItem.setHostName(cursor.getString(cursor.getColumnIndex(DataHelper.HOST_NAME)));
+            hostItem.setIpAddress(cursor.getString((cursor.getColumnIndex(DataHelper.HOST_IP))));
+            hostItem.setOperatingSystem(cursor.getString(cursor.getColumnIndex(DataHelper.HOST_OS)));
+            hostItem.setOpenPorts(cursor.getString(cursor.getColumnIndex(DataHelper.HOST_OPEN_PORTS)));
+
+            hostItem.setExploits(GetExploitsFromHostId(context,id));
+            hosts.add(hostItem);
+            cursor.moveToNext();
+        }
+
+        cursor.close();
+        database.close();
+        return hosts;
     }
 
     //
     private static ArrayList<Exploit> GetExploitsFromHostId(Context context, String HostId) {
+
         Exploit exploitItem = new Exploit(null,null,null);
         DataHelper data = new DataHelper(context);
         SQLiteDatabase database = data.getWritableDatabase();
         ArrayList<Exploit> exploits = new ArrayList<Exploit>();
 
         Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.EXPLOITS + " WHERE Host_FkId=\'" + HostId + "\'", null);
+
         while (!cursor.isAfterLast()) {
             exploitItem.setId(cursor.getString(cursor.getColumnIndex(DataHelper.EXPLOIT_ID)));
             exploitItem.setName(cursor.getString(cursor.getColumnIndex(DataHelper.EXPLOIT_NAME)));
             exploitItem.setDescription(cursor.getString(cursor.getColumnIndex(DataHelper.EXPLOIT_DESCRIPTION)));
             exploits.add(exploitItem);
+            cursor.moveToNext();
+        }
 
-
+        cursor.close();
+        database.close();
         return exploits;
     }
 
