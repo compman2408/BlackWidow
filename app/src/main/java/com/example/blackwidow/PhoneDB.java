@@ -16,7 +16,7 @@ import java.util.Calendar;
 public class PhoneDB {
     private static final String TAG = "PhoneDB";
 
-    public static String InsertScanIntoDB(Context context, String scanName) {
+    public static long InsertScanIntoDB(Context context, String scanName) {
         DataHelper data = new DataHelper(context);
         SQLiteDatabase database = data.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -24,14 +24,15 @@ public class PhoneDB {
 
         values.put(DataHelper.SCAN_NAME, scanName);
         values.put(DataHelper.SCAN_TIME_STAMP, tsLong.toString());
-        database.insert(DataHelper.SCANS,null,values);
+
+        long id = database.insert(DataHelper.SCANS,null,values);
 
         database.close();
-        return values.get(DataHelper.SCAN_ID).toString();
+        return id;
 
     }
 
-    public static String InsertHostIntoDB(Context context, String hostName, String ip, String os, String openPorts, String scanId) {
+    public static long InsertHostIntoDB(Context context, String hostName, String ip, String os, String openPorts, String scanId) {
         /*
         if (device.GetID() != -1) {
             throw new IllegalArgumentException("Host appears to already have been inserted into the database.");
@@ -46,10 +47,10 @@ public class PhoneDB {
         values.put(DataHelper.HOST_OS, os);
         values.put(DataHelper.HOST_OPEN_PORTS, openPorts);
         values.put(DataHelper.HOST_SCAN_FKID, scanId);
-        database.insert(DataHelper.HOSTS,null,values);
+        long id = database.insert(DataHelper.HOSTS,null,values);
 
         database.close();
-        return values.get(DataHelper.HOST_ID).toString();
+        return id;
 
     }
 

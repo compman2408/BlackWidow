@@ -211,7 +211,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
 
     /* Need to parse output and insert items into db */
     public void saveResults() {
-        String scanID = InsertScanIntoDB(activityContext,scanName);
+        long scanID = InsertScanIntoDB(activityContext,scanName);
         /*
         // TODO use parser to fill the null values in. this will probably be done in a loop for all scanned hosts
         String hostID = InsertHostIntoDB(this,null,null,null,null,scanID);
