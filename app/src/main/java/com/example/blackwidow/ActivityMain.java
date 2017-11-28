@@ -23,6 +23,7 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
     public static  String appDataDirectory;
     public static Map<Utils.Executable, String> executableFileLocations;
     public static String binaryFileLocation;
+    public static DataHelper db;
 
     private Button btnScanNetwork;
     private Button btnEZScan;

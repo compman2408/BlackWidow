@@ -19,7 +19,9 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Scanner;
 
 import static com.example.blackwidow.PhoneDB.*;
 
@@ -51,11 +53,16 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     String cmdString;
     public String scanName;
     public boolean osFingerPrinted = false;
+    public Context activityContext = this;
+    public DataHelper data;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ez_scan);
+
+        // initialize db
+        data = new DataHelper(this);
 
         // Get References to views
         _txtIPAddress = (EditText) findViewById(R.id.txtIPAddress);
@@ -63,6 +70,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         _btnSaveResults = (Button) findViewById(R.id.btnSaveResults);
         _scrollResults = (ScrollView) findViewById(R.id.scrollResults);
         _lblResults = (TextView) findViewById(R.id.lblResults);
+
 
         listView = (ExpandableListView) findViewById(R.id.lvExpOptions);
         initData();
@@ -72,7 +80,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         listView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
             @Override
             public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-                Log.wtf("CLICK", "GROUP CLICK " + groupPosition);
+                Log.d("CLICK", "GROUP CLICK " + groupPosition);
                 return false;
             }
         });
@@ -96,6 +104,12 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
                  listAdapter.notifyDataSetChanged(); //refresh view
                  return false;
              }
+        });
+
+        _btnSaveResults.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                btnSaveResults_OnClick(activityContext);
+            }
         });
     }
 
@@ -136,7 +150,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         for (int i = 0; i < OPTIONTYPES.length; i++) {
             if (optionsArr[i]) {
                 cmdString = cmdString + OPTIONARGS[i] + " ";
-                Log.wtf("COMMAND", cmdString);
+                Log.d("COMMAND", cmdString);
             }
         }
         cmdString = cmdString + _txtIPAddress.getText().toString();
@@ -175,13 +189,14 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
 
     private void setButtonsClickable(boolean clickable) {
         _btnScanNmap.setEnabled(clickable);
+        _btnSaveResults.setEnabled(clickable);
     }
 
     public void printOptionsArrayLog() {
         for (int i = 0; i < optionsArr.length; i++) {
-            Log.wtf("Options", "" + optionsArr[i]);
+            Log.d("Options", "" + optionsArr[i]);
         }
-        Log.wtf("Options", " " );
+        Log.d("Options", " " );
     }
 
     public void btnScanNmap_OnClick(View view) {
@@ -189,18 +204,21 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         runCommandInCLIAsync(ActivityMain.executableFileLocations.get(Utils.Executable.NMAP) + " " + cmdString);
     }
 
-    public void btnSaveResults_OnClick(View view) {
-        //TODO: Parse Nmap output and feed into DB classes
-
+    public void btnSaveResults_OnClick(Context context) {
         // pops up dialog to name scan
-        saveScanName(this);
+        saveScanName(context);
+    }
 
-        String scanID = InsertScanIntoDB(this,scanName);
+    /* Need to parse output and insert items into db */
+    public void saveResults() {
+        String scanID = InsertScanIntoDB(activityContext,scanName);
+        /*
         // TODO use parser to fill the null values in. this will probably be done in a loop for all scanned hosts
         String hostID = InsertHostIntoDB(this,null,null,null,null,scanID);
         if (osFingerPrinted) {
-            InsertExploitIntoDB(this, null, null, hostID);
+            InsertExploitIntoDB(activityContext, null, null, hostID);
         }
+        */
 
 
         Log.d(TAG,"Scan Results Saved");
@@ -219,6 +237,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
             public void onClick(DialogInterface dialog, int which) {
                 scanName = input.getText().toString();
                 dialog.dismiss();
+                saveResults();
             }
         });
         builder.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
@@ -229,5 +248,62 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         });
 
         builder.show();
+    }
+
+    public static LinkedList<NmapReturn> parse(Scanner input) {
+
+        LinkedList<NmapReturn> results = new LinkedList<NmapReturn>();
+        NmapReturn tmp = new NmapReturn();
+        while (input.hasNextLine()) {
+            String raw = input.nextLine();
+            String[] line = raw.split(" ");
+            if (line.length > 0) {
+                switch (line[0]) {
+                    case "Nmap":
+                        if (line[1].equals("scan")) {
+                            tmp = new NmapReturn();
+                            if (line.length == 5) {
+                                tmp.ip = line[4];
+                            } else if (line.length == 6) {
+                                tmp.ip = line[5].substring(1,
+                                        line[5].length() - 1);
+                                tmp.optHost = line[4];
+                            }
+
+                        } else if (!line[1].equals("done")) {
+                            // are there other possibilities
+                        }
+                        break;
+                    //case "Host":
+                    // I only ever received "Host is up (XXXXXs latency)."
+                    //break;
+                    case "Device":
+                        // a lot of "Device type: general purpose"
+                        tmp.deviceType = raw.substring(13);
+                        break;
+                    case "Aggressive":
+                        tmp.bestOSGuess = raw.substring(23);
+                        break;
+
+                    /*
+                     * any other important info can be parsed in here
+                     */
+
+                    default:
+                        if (Character.isDigit(line[0].charAt(0))) {
+                            tmp.unfiltered.put(Integer.parseInt(
+                                    line[0].substring(0, line[0].length() - 4)),
+                                    line[2]);
+                        }
+                        break;
+
+                }
+            } else if (tmp.ip.length() > 0) {
+                results.add(tmp);
+            }
+
+        }
+
+        return results;
     }
 }

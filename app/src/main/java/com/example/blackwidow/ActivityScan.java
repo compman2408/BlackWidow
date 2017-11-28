@@ -19,9 +19,9 @@ public class ActivityScan extends Activity {
 
         _lstViewDevices = (ListView) findViewById(R.id.lstViewDevices);
         _lstDevices = new ArrayList();
-        _lstDevices.add(new Device("WIN10-DESKTOP", "192.168.1.21"));
-        _lstDevices.add(new Device("SANTA'S IPHONE", "192.168.1.111"));
-        _lstDevices.add(new Device("UR-NEIGHBORHOOD-HAKR", "0.0.0.0"));
+        //_lstDevices.add(new Device("WIN10-DESKTOP", "192.168.1.21"));
+        //_lstDevices.add(new Device("SANTA'S IPHONE", "192.168.1.111"));
+        //_lstDevices.add(new Device("UR-NEIGHBORHOOD-HAKR", "0.0.0.0"));
 
         final DeviceListArrayAdapter aa = new DeviceListArrayAdapter(this, GetDeviceArray());
         _lstViewDevices.setAdapter(aa);

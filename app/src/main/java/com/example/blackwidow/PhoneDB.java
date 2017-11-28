@@ -24,6 +24,7 @@ public class PhoneDB {
 
         values.put(DataHelper.SCAN_NAME, scanName);
         values.put(DataHelper.SCAN_TIME_STAMP, tsLong.toString());
+        database.insert(DataHelper.SCANS,null,values);
 
         database.close();
         return values.get(DataHelper.SCAN_ID).toString();
@@ -45,6 +46,7 @@ public class PhoneDB {
         values.put(DataHelper.HOST_OS, os);
         values.put(DataHelper.HOST_OPEN_PORTS, openPorts);
         values.put(DataHelper.HOST_SCAN_FKID, scanId);
+        database.insert(DataHelper.HOSTS,null,values);
 
         database.close();
         return values.get(DataHelper.HOST_ID).toString();
@@ -60,6 +62,7 @@ public class PhoneDB {
         values.put(DataHelper.EXPLOIT_NAME, name);
         values.put(DataHelper.EXPLOIT_DESCRIPTION, description);
         values.put(DataHelper.EXPLOIT_HOST_FKID, hostId);
+        database.insert(DataHelper.EXPLOITS,null,values);
 
         database.close();
     }
