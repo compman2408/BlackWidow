@@ -52,6 +52,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     String scanType;
     String cmdString;
     public String scanName;
+    public String osQuery;
     public boolean osFingerPrinted = false;
     public Context activityContext = this;
     public DataHelper data;
@@ -212,13 +213,25 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     /* Need to parse output and insert items into db */
     public void saveResults() {
         long scanID = InsertScanIntoDB(activityContext,scanName);
-        /*
+
+
         // TODO use parser to fill the null values in. this will probably be done in a loop for all scanned hosts
-        String hostID = InsertHostIntoDB(this,null,null,null,null,scanID);
+        /* while (output has next line)
+            if (line)...
+             host =
+             ip =
+             os =
+             open_ports =
+             // if OS is parsed from device --> run query for shodan exploits
+          long hostID = InsertHostIntoDB(this,host,ip.....,null,null,scanID);
+         */
+        long hostID = InsertHostIntoDB(this,null,null,null,null,scanID);
+
+
         if (osFingerPrinted) {
+            queryShodanExploits(os);
             InsertExploitIntoDB(activityContext, null, null, hostID);
         }
-        */
 
 
         Log.d(TAG,"Scan Results Saved");
@@ -305,5 +318,16 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         }
 
         return results;
+    }
+
+    public void queryShodanExploits(String os) {
+        final String BASE_URL = "https://exploits.shodan.io/api/search?query=";
+        final String API_KEY = "ofqxN4bGWWDA5GwDEPZNMoEiddgBBZ9B";
+        String query = BASE_URL + os + "&key=" + API_KEY;
+
+
+
+
+
     }
 }

@@ -32,7 +32,7 @@ public class PhoneDB {
 
     }
 
-    public static long InsertHostIntoDB(Context context, String hostName, String ip, String os, String openPorts, String scanId) {
+    public static long InsertHostIntoDB(Context context, String hostName, String ip, String os, String openPorts, long scanId) {
         /*
         if (device.GetID() != -1) {
             throw new IllegalArgumentException("Host appears to already have been inserted into the database.");
@@ -54,7 +54,7 @@ public class PhoneDB {
 
     }
 
-    public static void InsertExploitIntoDB(Context context, String name, String description, String hostId) {
+    public static void InsertExploitIntoDB(Context context, String name, String description, long hostId) {
 
         DataHelper data = new DataHelper(context);
         SQLiteDatabase database = data.getWritableDatabase();
