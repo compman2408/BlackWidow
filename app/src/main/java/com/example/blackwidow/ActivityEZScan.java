@@ -216,6 +216,10 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
 
 
         // TODO use parser to fill the null values in. this will probably be done in a loop for all scanned hosts
+        String os = null;
+        String ip;
+        String hostName;
+        String openPorts;
         /* while (output has next line)
             if (line)...
              host =
