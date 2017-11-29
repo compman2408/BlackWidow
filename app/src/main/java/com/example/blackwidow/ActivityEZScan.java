@@ -391,7 +391,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
                         String id = oneObject.getString("_id");
                         String description = oneObject.getString("description");
                         String name = source + id;
-
+                        long hostID = 0; //F
                         InsertExploitIntoDB(activityContext, name, description, hostID);
 
                     } catch (JSONException e) {
