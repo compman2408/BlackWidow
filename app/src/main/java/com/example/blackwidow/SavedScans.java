@@ -39,7 +39,7 @@ public class SavedScans extends Activity {
         while (scanIterator.hasNext()) {
 
 
-            List<String> hostsInScan = new ArrayList<String>();
+            List<ListItem> hostsInScan = new ArrayList<ListItem>();
             Scan scan = scanIterator.next();
             listDataHeader.add(scan.getName());
             ArrayList<Device> devices = scan.getDevices();
@@ -70,7 +70,6 @@ public class SavedScans extends Activity {
                 hostsInScan.add(item);
 
             }
-
             listHash.put(scan.getName(), hostsInScan);
         }
     }
