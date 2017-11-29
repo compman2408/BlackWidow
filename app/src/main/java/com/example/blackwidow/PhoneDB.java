@@ -83,7 +83,6 @@ public class PhoneDB {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             Scan newScan = GetScanFromCursor(context,cursor);
-            //newMovie.SetFormats(GetFormatsForMovie(context, newMovie, database));
             scans.add(newScan);
             cursor.moveToNext();
         }
