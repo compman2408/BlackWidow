@@ -10,8 +10,6 @@ import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 import java.util.HashMap;
 import java.util.List;
 
@@ -25,7 +23,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private HashMap<String, List<ListItem>> listHashMap;
     private static final String TAG2 = "ListAdapter";
 
-    public ExpandableListAdapter(Context context, List<String> listDataHeader, HashMap<String, List<ListItem>> listHashMap) {
+    public ExpandableListAdapter(Context context, List<String> listDataHeader, HashMap<String, List<String>> listHashMap) {
         this.context = context;
         this.listDataHeader = listDataHeader;
         this.listHashMap = listHashMap;

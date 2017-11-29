@@ -30,8 +30,11 @@
         <activity
             android:name=".ActivityScan"
             android:label="@string/activity_scan_label" />
-        <activity android:name=".ActivityTerminal"></activity>
-        <activity android:name=".ActivityEZScan"></activity>
+        <activity android:name=".ActivityTerminal" />
+        <activity android:name=".ActivityEZScan" />
+        <activity
+            android:name=".SavedScans"
+            android:label="@string/title_activity_saved_scans"></activity>
     </application>
 
 </manifest>
