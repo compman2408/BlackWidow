@@ -52,7 +52,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
     private static final String[] SCANTYPES = new String[]{"REGULAR SCAN", "TCP SYN SCAN", "TCP NULL SCAN"};
     private static final String[] SCANTYPEARGS = new String[]{"", "-sS", "-sN"};
     private static final String[] OPTIONTYPES = new String[]{"UDP SCAN", "OS DETECTION", "FAST", "OPEN PORT SCAN", "VERBOSE", "TIMING TEMPLATE", "TRACEROUTE"};
-    private static final String[] OPTIONARGS = new String[]{"-sU", "-A", "-F", "-sV", "-v", "-T4", "-traceroute"};
+    private static final String[] OPTIONARGS = new String[]{"-sU", "-O", "-F", "-sV", "-v", "-T4", "-traceroute"};
     private static final int SCANTYPEINDEX = 0;
     private static final int OPTIONTYPEINDEX = 1;
 
