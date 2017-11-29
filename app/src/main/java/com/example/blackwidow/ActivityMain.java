@@ -26,7 +26,6 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
     public static DataHelper db;
 
     private Button btnScanNetwork;
-    private Button btnEZScan;
     private AnimationDrawable btnAnimation;
     private ProgressDialog dlgLoading;
     private Button btnViewScanHistory;
@@ -44,17 +43,13 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(stringFromJNI());
+//        TextView tv = (TextView) findViewById(R.id.sample_text);
+//        tv.setText(stringFromJNI());
 
-        btnEZScan = (Button) findViewById(R.id.btnEZScan);
         // Start the scan button animation
         btnScanNetwork = (Button) findViewById(R.id.btnScanNetwork);
 //        btnAnimation = (AnimationDrawable) btnScanNetwork.getBackground();
@@ -161,19 +156,16 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
     }
 
     public void btnScanNetwork_OnClick(View view) {
-        startActivity(new Intent(this, ActivityScan.class));
+        //startActivity(new Intent(this, ActivityScan.class));
+        startActivity(new Intent(this, ActivityEZScan.class));
     }
 
     public void btnTerminal_OnClick(View view) {
         startActivity(new Intent(this, ActivityTerminal.class));
     }
 
-    public void btnSimpleScan_OnClick(View view) {
-        this.startActivity(new Intent(this, ActivityEZScan.class));
-    }
-
     public void btnViewScanHistory_OnClick(View view) {
-        this.startActivity(new Intent(this, SavedScans.class));
+        startActivity(new Intent(this, SavedScans.class));
     }
 
     @Override
