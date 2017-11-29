@@ -9,23 +9,14 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnKeyListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 public class ActivityCalculator extends Activity {
     private static final String BLACK_WIDOW_STARTUP_CODE = "12345";
-
-    private final String SDK_VERSION = "1";
-    private final int MENUITEM_CLOSE = 300;
-    private static final int SWIPE_MIN_DISTANCE = 120;
-    private static final int SWIPE_MAX_OFF_PATH = 250;
-    private static final int SWIPE_THRESHOLD_VELOCITY = 200;
-    private GestureDetector gestureDetector;
 
     /*
      * Edit Text and Button object initialization for simple activity_calculator design.
@@ -505,6 +496,9 @@ public class ActivityCalculator extends Activity {
 
                         case KeyEvent.KEYCODE_DPAD_DOWN:
                             return false;
+                            
+                        case KeyEvent.KEYCODE_BACK:
+                            finish();
                     }
                 }
 
