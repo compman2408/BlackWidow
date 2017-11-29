@@ -362,6 +362,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
             dlgLoading.dismiss();
 
         // Do something with the response
+
         try {
             JSONObject jsonObject = new JSONObject(jsonResponse);
             JSONArray jsonArray = jsonObject.getJSONArray("matches");

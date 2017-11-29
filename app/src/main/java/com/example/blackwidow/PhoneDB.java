@@ -83,7 +83,6 @@ public class PhoneDB {
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             Scan newScan = GetScanFromCursor(context,cursor);
-            //newMovie.SetFormats(GetFormatsForMovie(context, newMovie, database));
             scans.add(newScan);
             cursor.moveToNext();
         }
@@ -116,6 +115,7 @@ public class PhoneDB {
         SQLiteDatabase database = data.getWritableDatabase();
         ArrayList<Device> hosts = new ArrayList<Device>();
         Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.HOSTS + " WHERE Scan_FkId=\'" + scanId + "\'", null);
+        cursor.moveToFirst();
 
         while (!cursor.isAfterLast()) {
             String id = cursor.getString(cursor.getColumnIndex(DataHelper.HOST_ID));
@@ -144,6 +144,7 @@ public class PhoneDB {
         ArrayList<Exploit> exploits = new ArrayList<Exploit>();
 
         Cursor cursor = database.rawQuery("SELECT * FROM " + DataHelper.EXPLOITS + " WHERE Host_FkId=\'" + HostId + "\'", null);
+        cursor.moveToFirst();
 
         while (!cursor.isAfterLast()) {
             exploitItem.setId(cursor.getString(cursor.getColumnIndex(DataHelper.EXPLOIT_ID)));
