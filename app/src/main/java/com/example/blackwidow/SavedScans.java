@@ -2,6 +2,8 @@ package com.example.blackwidow;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.util.Log;
+import android.view.View;
 import android.widget.ExpandableListView;
 
 import java.util.ArrayList;
@@ -29,6 +31,16 @@ public class SavedScans extends Activity {
         listView = (ExpandableListView) findViewById(R.id.lvScans);
         prepareListData(scans);
         listAdapter = new ExpandableListAdapter(this, listDataHeader, listHash);
+        listView.setAdapter(listAdapter);
+
+        listView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
+            @Override
+            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
+                Log.d("CLICK", "GROUP CLICK " + groupPosition);
+                return false;
+            }
+        });
+
     }
 
     private void prepareListData(ArrayList<Scan> scans) {
