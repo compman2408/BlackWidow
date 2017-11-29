@@ -39,7 +39,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
     private static final String TAG = "ActivityEZScan";
     private static final String[] SCANTYPES = new String[]{"REGULAR SCAN", "TCP SYN SCAN", "TCP NULL SCAN"};
     private static final String[] SCANTYPEARGS = new String[]{"", "-sS", "-sN"};
-    private static final String[] OPTIONTYPES = new String[]{"UDP SCAN1", "OS DETECTION", "FAST", "OPEN PORT SCAN", "VERBOSE", "TIMING TEMPLATE", "TRACEROUTE"};
+    private static final String[] OPTIONTYPES = new String[]{"UDP SCAN", "OS DETECTION", "FAST", "OPEN PORT SCAN", "VERBOSE", "TIMING TEMPLATE", "TRACEROUTE"};
     private static final String[] OPTIONARGS = new String[]{"-sU", "-O", "-F", "-sV", "-v", "-T4", "-traceroute"};
     private static final int SCANTYPEINDEX = 0;
     private static final int OPTIONTYPEINDEX = 1;
@@ -240,7 +240,6 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
     public void saveResults() {
         long scanID = InsertScanIntoDB(activityContext, scanName);
 
-
         // TODO use parser to fill the null values in. this will probably be done in a loop for all scanned hosts
         String os = null;
         String ip;
@@ -260,14 +259,18 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
          */
 
         for (NmapReturn host : results) {
+            Log.wtf(TAG, "MAP TO STRING OF PORTS");
+            Log.wtf(TAG, host.ip);
+            Log.wtf(TAG, host.optHost);
+            Log.wtf(TAG, host.bestOSGuess);
+            Log.wtf(TAG, host.unfiltered.toString());
+            long hostID = InsertHostIntoDB(this, getNullOrString(host.optHost), getNullOrString(host.ip), getNullOrString(host.bestOSGuess),getNullOrString(host.unfiltered.toString()) , scanID);
             if (host.bestOSGuess.length() > 0) {
-           //     ShodanPostCallback();
+                getExploitsForOS(activityContext, host.bestOSGuess, hostID);
             }
-        }
-
-        long hostID = InsertHostIntoDB(this, null, null, null, null, scanID);
-        if (osFingerPrinted) {
-            getExploitsForOS(activityContext, os, hostID);
+            if (osFingerPrinted) {
+              //  getExploitsForOS(activityContext, os, hostID);
+            }
         }
 
 
@@ -314,11 +317,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
         while (i < input.length) {
             String raw = input[i];
             Log.wtf(TAG, raw);
-            Log.wtf(TAG, "end of line");
-
             String[] line = raw.split(" +", 0);
-
-            Log.wtf(TAG, Arrays.toString(line));
             if (line.length > 0) {
                 Log.wtf(TAG, "line is longer than 0");
                 switch (line[0]) {
@@ -333,7 +332,6 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
                                 tmp.ip = line[5].substring(1,
                                         line[5].length() - 1);
                                 tmp.optHost = line[4];
-
                             }
 
                         } else if (!line[1].equals("done")) {

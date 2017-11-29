@@ -47,6 +47,8 @@ public class PhoneDB {
         values.put(DataHelper.HOST_OS, os);
         values.put(DataHelper.HOST_OPEN_PORTS, openPorts);
         values.put(DataHelper.HOST_SCAN_FKID, scanId);
+        Log.wtf(TAG, "insert host into DB");
+        Log.wtf(TAG, values.toString());
         long id = database.insert(DataHelper.HOSTS,null,values);
 
         database.close();
@@ -62,6 +64,9 @@ public class PhoneDB {
         values.put(DataHelper.EXPLOIT_NAME, name);
         values.put(DataHelper.EXPLOIT_DESCRIPTION, description);
         values.put(DataHelper.EXPLOIT_HOST_FKID, hostId);
+
+        Log.wtf(TAG, "insert exploit into DB");
+        Log.wtf(TAG, values.toString());
         database.insert(DataHelper.EXPLOITS,null,values);
 
         database.close();
@@ -84,6 +89,8 @@ public class PhoneDB {
             Scan newScan = GetScanFromCursor(context,cursor);
             scans.add(newScan);
             cursor.moveToNext();
+            Log.wtf(TAG, newScan.toString());
+            Log.wtf(TAG, "next scan");
         }
         // make sure to close the cursor
         cursor.close();
@@ -109,7 +116,7 @@ public class PhoneDB {
 
     private static ArrayList<Device> GetHostsFromScanId(Context context, String scanId) {
 
-        Device hostItem = new Device(null,null,null,null,null,null);
+        Device hostItem;
         DataHelper data = new DataHelper(context);
         SQLiteDatabase database = data.getWritableDatabase();
         ArrayList<Device> hosts = new ArrayList<Device>();
@@ -118,6 +125,7 @@ public class PhoneDB {
 
         while (!cursor.isAfterLast()) {
             String id = cursor.getString(cursor.getColumnIndex(DataHelper.HOST_ID));
+            hostItem = new Device(null,null,null,null,null,null);
             hostItem.setId(id);
             hostItem.setHostName(cursor.getString(cursor.getColumnIndex(DataHelper.HOST_NAME)));
             hostItem.setIpAddress(cursor.getString((cursor.getColumnIndex(DataHelper.HOST_IP))));
@@ -131,6 +139,9 @@ public class PhoneDB {
 
         cursor.close();
         database.close();
+        Log.wtf("SavedScans", "HOST SIZE" + Integer.toString(hosts.size()));
+        Log.wtf("SavedScans", "HOST 0" + hosts.get(0).getIpAddress());
+        Log.wtf("SavedScans", "HOST LAST" + hosts.get(hosts.size()-1).getIpAddress());
         return hosts;
     }
 

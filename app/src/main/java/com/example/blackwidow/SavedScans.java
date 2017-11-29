@@ -28,6 +28,8 @@ public class SavedScans extends Activity {
         setContentView(R.layout.activity_saved_scans);
 
         scans = GetScansFromDB(this);
+        Log.wtf("SavedScans", "SAVED SCANS ARRAYLIST");
+        Log.wtf("SavedScans", scans.toString());
         listView = (ExpandableListView) findViewById(R.id.lvScans);
         prepareListData(scans);
         listAdapter = new ExpandableListAdapter(this, listDataHeader, listHash);
@@ -49,18 +51,25 @@ public class SavedScans extends Activity {
 
         Iterator<Scan> scanIterator = scans.iterator();
         while (scanIterator.hasNext()) {
-
-
             List<ListItem> hostsInScan = new ArrayList<ListItem>();
             Scan scan = scanIterator.next();
+            Log.wtf("SavedScans", scan.getName());
+            Log.wtf("SavedScans", scan.getId());
+            Log.wtf("SavedScans", scan.toString());
+
             listDataHeader.add(scan.getName());
             ArrayList<Device> devices = scan.getDevices();
+            Log.wtf("SavedScans", devices.toString());
+            Log.wtf("SavedScans", devices.get(0).toString());
+//            Log.wtf("SavedScans", devices.get(1).toString());
             Iterator<Device> deviceIterator = devices.iterator();
 
             while (deviceIterator.hasNext()) {
 
                 StringBuilder deviceInfo = new StringBuilder();
                 Device device = deviceIterator.next();
+                Log.wtf("SavedScans", device.getIpAddress());
+                Log.wtf("SavedScans", device.toString());
 
                 deviceInfo.append(device.getId() + " ");
                 deviceInfo.append("Host Name: " + device.getHostName() + "\n");
@@ -79,15 +88,9 @@ public class SavedScans extends Activity {
                 }
 
                 ListItem item = new ListItem(deviceInfo.toString(),false);
-              //  hostsInScan.add(item);
-
+                hostsInScan.add(item);
             }
-<<<<<<< HEAD
-
-           // listHash.put(scan.getName(), hostsInScan);
-=======
             listHash.put(scan.getName(), hostsInScan);
->>>>>>> master
         }
     }
 
