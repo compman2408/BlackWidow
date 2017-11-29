@@ -192,4 +192,8 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
             Log.d(TAG, message);
         Log.i(TAG, "READY");
     }
+
+    public void btnShodanTest_OnClick(View view) {
+        startActivity(new Intent(this, ActivityShodanTest.class));
+    }
 }

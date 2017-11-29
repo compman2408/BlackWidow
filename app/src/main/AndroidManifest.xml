@@ -17,8 +17,12 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".ActivityMain" android:label="@string/app_name" />
-        <activity android:name=".ActivityScan" android:label="@string/activity_scan_label" />
+        <activity
+            android:name=".ActivityMain"
+            android:label="@string/app_name" />
+        <activity
+            android:name=".ActivityScan"
+            android:label="@string/activity_scan_label" />
         <activity android:name=".ActivityTerminal" />
         <activity android:name=".ActivityEZScan" />
         <activity
@@ -26,12 +30,14 @@
             android:label="@string/activity_calculator">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".SavedScans"
-            android:label="@string/title_activity_saved_scans"></activity>
+            android:label="@string/title_activity_saved_scans" />
+        <activity android:name=".ActivityShodanTest"></activity>
     </application>
 
 </manifest>

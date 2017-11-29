@@ -25,22 +25,22 @@ public class NetworkHelper {
         String responseStr = "";
 
         try {
-            //String postURL = "https://exploits.shodan.io/api/search";
-            Log.v(TAG, "POST URL: " + postURL);
-            URL url = new URL(postURL);
+            String getURL = postURL + "?" + postDataString;
+            Log.v(TAG, "POST URL: " + getURL);
+            URL url = new URL(getURL);
             HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
             conn.setReadTimeout(10000);
             conn.setConnectTimeout(15000);
-            conn.setRequestMethod("POST");
+            conn.setRequestMethod("GET");
             conn.setDoInput(true);
             // Start the request
             conn.connect();
             Log.v(TAG, "Connected!");
 
             // Post the data to the website
-            postStream = new OutputStreamWriter(conn.getOutputStream());
-            postStream.write(postDataString);
-            postStream.flush();
+//            postStream = new OutputStreamWriter(conn.getOutputStream());
+//            postStream.write(postDataString);
+//            postStream.flush();
 
             // Read the response
             responseStream = conn.getInputStream();

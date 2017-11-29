@@ -389,7 +389,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
 
         try {
 
-            postData.append("&" + URLEncoder.encode("query", "UTF-8"));
+            postData.append(URLEncoder.encode("query", "UTF-8"));
             postData.append("=" + URLEncoder.encode(os, "UTF-8"));
 
             postData.append("&" + URLEncoder.encode("key", "UTF-8"));//
@@ -409,27 +409,32 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
 
         // Do something with the response
 
-        try {
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-            JSONArray jsonArray = jsonObject.getJSONArray("matches");
+        if (!jsonResponse.startsWith("ERROR")) {
+            try {
+                JSONObject jsonObject = new JSONObject(jsonResponse);
+                JSONArray jsonArray = jsonObject.getJSONArray("matches");
 
-            for (int i=0; i < jsonArray.length(); i++) {
-                try {
-                    JSONObject oneObject = jsonArray.getJSONObject(i);
-                    // Pulling items from the array
-                    String source = oneObject.getString("source");
-                    String id = oneObject.getString("_id");
-                    String description = oneObject.getString("description");
-                    String name = source + id;
+                for (int i=0; i < jsonArray.length(); i++) {
+                    try {
+                        JSONObject oneObject = jsonArray.getJSONObject(i);
+                        // Pulling items from the array
+                        String source = oneObject.getString("source");
+                        String id = oneObject.getString("_id");
+                        String description = oneObject.getString("description");
+                        String name = source + id;
 
-                    InsertExploitIntoDB(activityContext, name, description, hostID);
+                        InsertExploitIntoDB(activityContext, name, description, hostID);
 
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } else {
+            // There was an error. Just skip processing response.
+            Log.i(TAG, "Error was returned. Processing is being skipped.");
         }
 
         Toast.makeText(this, "Response --> " + jsonResponse, Toast.LENGTH_SHORT).show();
