@@ -29,6 +29,7 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
     private Button btnEZScan;
     private AnimationDrawable btnAnimation;
     private ProgressDialog dlgLoading;
+    private Button btnViewScanHistory;
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
@@ -43,6 +44,9 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -54,6 +58,8 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
         // Start the scan button animation
         btnScanNetwork = (Button) findViewById(R.id.btnScanNetwork);
 //        btnAnimation = (AnimationDrawable) btnScanNetwork.getBackground();
+
+        btnViewScanHistory = (Button) findViewById(R.id.btnScanHistory);
 
         btnAnimation = new AnimationScan(this, R.drawable.btn_scan_frame0);
         btnScanNetwork.setBackground(btnAnimation);
@@ -164,6 +170,10 @@ public class ActivityMain extends Activity implements IAsyncZipFileProcessingCal
 
     public void btnSimpleScan_OnClick(View view) {
         this.startActivity(new Intent(this, ActivityEZScan.class));
+    }
+
+    public void btnViewScanHistory_OnClick(View view) {
+        this.startActivity(new Intent(this, SavedScans.class));
     }
 
     @Override
