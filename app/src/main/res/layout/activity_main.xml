@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/spidertrasp"
+    android:background="@drawable/spidertransp"
     tools:context="com.example.blackwidow.ActivityMain">
 
     <TextView
