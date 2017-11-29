@@ -17,7 +17,7 @@ public class SavedScans extends Activity {
     private ExpandableListView listView;
     private ExpandableListAdapter listAdapter;
     private List<String> listDataHeader;
-    private HashMap<String, List<String>> listHash;
+    private HashMap<String, List<ListItem>> listHash;
 
 
     @Override
@@ -33,7 +33,7 @@ public class SavedScans extends Activity {
 
     private void prepareListData(ArrayList<Scan> scans) {
         listDataHeader = new ArrayList<String>();
-        listHash = new HashMap<String, List<String>>();
+        listHash = new HashMap<String, List<ListItem>>();
 
         Iterator<Scan> scanIterator = scans.iterator();
         while (scanIterator.hasNext()) {
@@ -66,7 +66,8 @@ public class SavedScans extends Activity {
                     deviceInfo.append("\tDescription: " + exploit.getDescription());
                 }
 
-                hostsInScan.add(deviceInfo.toString());
+                ListItem item = new ListItem(deviceInfo.toString(),false);
+                hostsInScan.add(item);
 
             }
 

@@ -23,7 +23,7 @@ public class ExpandableListAdapter extends BaseExpandableListAdapter {
     private HashMap<String, List<ListItem>> listHashMap;
     private static final String TAG2 = "ListAdapter";
 
-    public ExpandableListAdapter(Context context, List<String> listDataHeader, HashMap<String, List<String>> listHashMap) {
+    public ExpandableListAdapter(Context context, List<String> listDataHeader, HashMap<String, List<ListItem>> listHashMap) {
         this.context = context;
         this.listDataHeader = listDataHeader;
         this.listHashMap = listHashMap;

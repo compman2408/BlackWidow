@@ -5,16 +5,12 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.InputType;
-import android.util.JsonReader;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,21 +19,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URLEncoder;
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
-
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLPeerUnverifiedException;
 
 import static com.example.blackwidow.PhoneDB.*;
 
@@ -47,7 +34,7 @@ import static com.example.blackwidow.PhoneDB.*;
  * Created by Bobak on 11/19/2017.
  */
 
-public class ActivityEZScan extends Activity implements IAsyncCommandCallback, INetworkPostCallback {
+public class ActivityEZScan extends Activity implements IAsyncCommandCallback, IShodanPostCallback {
     private static final String TAG = "ActivityEZScan";
     private static final String[] SCANTYPES = new String[]{"REGULAR SCAN", "TCP SYN SCAN", "TCP NULL SCAN"};
     private static final String[] SCANTYPEARGS = new String[]{"", "-sS", "-sN"};
@@ -256,7 +243,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
          */
         long hostID = InsertHostIntoDB(this, null, null, null, null, scanID);
         if (osFingerPrinted) {
-            getExploitsForOS(os, activityContext);
+            getExploitsForOS(activityContext, os, hostID);
         }
 
 
@@ -347,7 +334,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
     }
 
 
-    public void getExploitsForOS(String os, Context context) {
+    public void getExploitsForOS(Context context, String os, long hostID) {
         Log.i(TAG, "Fetch exploits for OS from Shodan API...");
         dlgLoading.setMessage("Getting exploits for OS: " + os);
         dlgLoading.show();
@@ -362,47 +349,43 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
             postData.append("&" + URLEncoder.encode("key", "UTF-8"));//
             postData.append("=" + URLEncoder.encode("ofqxN4bGWWDA5GwDEPZNMoEiddgBBZ9B", "UTF-8"));
 
-            NetworkHelper.GetExploitsFromAPI(context, postData.toString(), this);
-
+            new GetExploitsPostTask().execute(new ShodanPostRequest(this, postData.toString(), hostID, this));
         } catch (Exception ex) {
             Log.i(TAG, "Error starting post: " + ex.getMessage());
         }
     }
 
     @Override
-    public void NetworkPostCallback(NetworkHelper.POST_TYPE x, String jsonResponse) {
+    public void ShodanPostCallback(String jsonResponse, long hostID) {
         // Dismiss the dialog box telling the user to wait
         if (dlgLoading.isShowing())
             dlgLoading.dismiss();
 
         // Do something with the response
-        if (x == NetworkHelper.POST_TYPE.GET_EXPLOITS) {
 
+        try {
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+            JSONArray jsonArray = jsonObject.getJSONArray("matches");
 
-            try {
-                JSONObject jsonObject = new JSONObject(jsonResponse);
-                JSONArray jsonArray = jsonObject.getJSONArray("matches");
+            for (int i=0; i < jsonArray.length(); i++) {
+                try {
+                    JSONObject oneObject = jsonArray.getJSONObject(i);
+                    // Pulling items from the array
+                    String source = oneObject.getString("source");
+                    String id = oneObject.getString("_id");
+                    String description = oneObject.getString("description");
+                    String name = source + id;
 
-                for (int i=0; i < jsonArray.length(); i++) {
-                    try {
-                        JSONObject oneObject = jsonArray.getJSONObject(i);
-                        // Pulling items from the array
-                        String source = oneObject.getString("source");
-                        String id = oneObject.getString("_id");
-                        String description = oneObject.getString("description");
-                        String name = source + id;
+                    InsertExploitIntoDB(activityContext, name, description, hostID);
 
-                        //InsertExploitIntoDB(activityContext, name, description, hostID);
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            } catch (JSONException e) {
-                e.printStackTrace();
             }
-
-            Toast.makeText(this, "Response --> " + jsonResponse, Toast.LENGTH_SHORT).show();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+
+        Toast.makeText(this, "Response --> " + jsonResponse, Toast.LENGTH_SHORT).show();
     }
 }
