@@ -24,7 +24,7 @@
         <activity android:name=".ActivityEZScan" />
         <activity
             android:name=".ActivityCalculator"
-            android:label="@string/activity_calculator">
+            android:label="@string/activity_calculator_label">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
