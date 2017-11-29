@@ -67,11 +67,11 @@ public class SavedScans extends Activity {
                 }
 
                 ListItem item = new ListItem(deviceInfo.toString(),false);
-                hostsInScan.add(item);
+              //  hostsInScan.add(item);
 
             }
 
-            listHash.put(scan.getName(), hostsInScan);
+           // listHash.put(scan.getName(), hostsInScan);
         }
     }
 

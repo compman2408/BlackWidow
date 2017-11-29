@@ -8,7 +8,7 @@ import java.util.Map;
  */
 
 public class NmapReturn {
-    public String ip, optHost, bestOSGuess, deviceType = "";
+    public String ip = "", optHost = "", bestOSGuess = "", deviceType = "";
     public Map<Integer, String> unfiltered;
 
     public NmapReturn() {

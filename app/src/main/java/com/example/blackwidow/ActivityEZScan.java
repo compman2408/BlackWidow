@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
     boolean[] optionsArr;
     String scanType;
     String cmdString;
+    String latestResults;
     public String scanName;
     public String osQuery;
     public boolean osFingerPrinted = false;
@@ -127,6 +129,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
     }
 
     private void initData() {
+        latestResults = "";
         optionsArr = new boolean[7]; //initialize options to false
         scanType = SCANTYPES[0]; //Set scan type to Regular scan
 
@@ -186,6 +189,9 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
         else
             Log.d(TAG, output);
 
+        latestResults = output;
+        Log.wtf(TAG, "latestResults " + latestResults);
+        Log.wtf(TAG, output);
         _lblResults.setText(_lblResults.getText() + output + "\n");
         // Re-enable the buttons after the command has completed to allow the next command to execute
         setButtonsClickable(true);
@@ -222,6 +228,14 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
         saveScanName(context);
     }
 
+    public String getNullOrString(String s) {
+        if (s.length() < 1) {
+            return null;
+        } else {
+            return s;
+        }
+    }
+
     /* Need to parse output and insert items into db */
     public void saveResults() {
         long scanID = InsertScanIntoDB(activityContext, scanName);
@@ -232,6 +246,9 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
         String ip;
         String hostName;
         String openPorts;
+        Log.wtf(TAG, "latestResults saveResults");
+        Log.wtf(TAG, latestResults);
+        LinkedList<NmapReturn> results = parse(latestResults.split("\\r?\\n"));
         /* while (output has next line)
             if (line)...
              host =
@@ -241,6 +258,13 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
              // if OS is parsed from device --> run query for shodan exploits
           long hostID = InsertHostIntoDB(this,host,ip.....,null,null,scanID);
          */
+
+        for (NmapReturn host : results) {
+            if (host.bestOSGuess.length() > 0) {
+           //     ShodanPostCallback();
+            }
+        }
+
         long hostID = InsertHostIntoDB(this, null, null, null, null, scanID);
         if (osFingerPrinted) {
             getExploitsForOS(activityContext, os, hostID);
@@ -276,17 +300,32 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
         builder.show();
     }
 
-    public static LinkedList<NmapReturn> parse(Scanner input) {
+    public static LinkedList<NmapReturn> parse(String[] input) {
 
         LinkedList<NmapReturn> results = new LinkedList<NmapReturn>();
         NmapReturn tmp = new NmapReturn();
-        while (input.hasNextLine()) {
-            String raw = input.nextLine();
-            String[] line = raw.split(" ");
+
+
+        Log.wtf(TAG, "START OF PARSE");
+        Log.wtf(TAG, Integer.toString(input.length));
+        Log.wtf(TAG, Arrays.toString(input));
+        String previousLine = "";
+        int i = 0;
+        while (i < input.length) {
+            String raw = input[i];
+            Log.wtf(TAG, raw);
+            Log.wtf(TAG, "end of line");
+
+            String[] line = raw.split(" +", 0);
+
+            Log.wtf(TAG, Arrays.toString(line));
             if (line.length > 0) {
+                Log.wtf(TAG, "line is longer than 0");
                 switch (line[0]) {
                     case "Nmap":
                         if (line[1].equals("scan")) {
+                            Log.wtf(TAG, "ADDED TMP TO RESULTS IN NMAP SWITCH-CASE");
+                            results.add(tmp); //MAYBE REMOVE
                             tmp = new NmapReturn();
                             if (line.length == 5) {
                                 tmp.ip = line[4];
@@ -294,6 +333,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
                                 tmp.ip = line[5].substring(1,
                                         line[5].length() - 1);
                                 tmp.optHost = line[4];
+
                             }
 
                         } else if (!line[1].equals("done")) {
@@ -316,7 +356,13 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
                      */
 
                     default:
-                        if (Character.isDigit(line[0].charAt(0))) {
+                        if (line[0].length() == 0) {
+                            break;
+                        }
+                        Log.wtf(TAG,"DEFAULT");
+                        Log.wtf(TAG, "LINE[0] = " + line[0]);
+                        if (line.length > 0 && Character.isDigit(line[0].charAt(0))) {
+                            Log.wtf(TAG, "ADDED PORT: " + line[0].substring(0, line[0].length() - 4) + " " + line[2]);
                             tmp.unfiltered.put(Integer.parseInt(
                                     line[0].substring(0, line[0].length() - 4)),
                                     line[2]);
@@ -325,11 +371,13 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback, I
 
                 }
             } else if (tmp.ip.length() > 0) {
+                Log.wtf(TAG, "ADDED TMP TO RESULTS IN ELSEIF");
                 results.add(tmp);
             }
-
+            previousLine = raw;
+            i++;
         }
-
+        Log.wtf(TAG, Integer.toString(results.toArray().length));
         return results;
     }
 

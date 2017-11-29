@@ -51,7 +51,6 @@ public class PhoneDB {
 
         database.close();
         return id;
-
     }
 
     public static void InsertExploitIntoDB(Context context, String name, String description, long hostId) {
