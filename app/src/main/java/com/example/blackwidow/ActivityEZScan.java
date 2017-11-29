@@ -2,21 +2,24 @@ package com.example.blackwidow;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,11 +28,13 @@ import java.util.Scanner;
 
 import static com.example.blackwidow.PhoneDB.*;
 
+
+
 /**
  * Created by Bobak on 11/19/2017.
  */
 
-public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
+public class ActivityEZScan extends Activity implements IAsyncCommandCallback, IShodanPostCallback {
     private static final String TAG = "ActivityEZScan";
     private static final String[] SCANTYPES = new String[]{"REGULAR SCAN", "TCP SYN SCAN", "TCP NULL SCAN"};
     private static final String[] SCANTYPEARGS = new String[]{"", "-sS", "-sN"};
@@ -56,11 +61,17 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
     public boolean osFingerPrinted = false;
     public Context activityContext = this;
     public DataHelper data;
+    private ProgressDialog dlgLoading;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ez_scan);
+
+        // Set up the progress dialog to show the user that something is happening
+        dlgLoading = new ProgressDialog(this);
+        dlgLoading.setTitle("Please Wait...");
+        dlgLoading.setCancelable(false);
 
         // initialize db
         data = new DataHelper(this);
@@ -87,24 +98,25 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         });
 
         listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            ListItem _lastScanTypeSelected = (ListItem) listAdapter.getChild(SCANTYPEINDEX,0); //initial scan type is regular (no args)
-             @Override
-             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                 Log.wtf("CLICK", "CHILD CLICK " + groupPosition + " " + childPosition);
-                 if (groupPosition == SCANTYPEINDEX) { //for SCAN TYPES
-                     scanType = SCANTYPES[childPosition]; //update the type of scan to perform
-                     if (_lastScanTypeSelected != null) {
-                         _lastScanTypeSelected.toggleSelected();
-                     }
-                     ((ListItem) listAdapter.getChild(groupPosition, childPosition)).setSelected(true);
-                     _lastScanTypeSelected = (ListItem) listAdapter.getChild(groupPosition, childPosition);
-                 } else if  (groupPosition == OPTIONTYPEINDEX) { //for OPTIONS
-                     optionsArr[childPosition] = !optionsArr[childPosition]; //update the option selection boolean here
-                     ((ListItem) listAdapter.getChild(groupPosition, childPosition)).toggleSelected(); //update the option selection boolean in the data bound to the view
-                 }
-                 listAdapter.notifyDataSetChanged(); //refresh view
-                 return false;
-             }
+            ListItem _lastScanTypeSelected = (ListItem) listAdapter.getChild(SCANTYPEINDEX, 0); //initial scan type is regular (no args)
+
+            @Override
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                Log.wtf("CLICK", "CHILD CLICK " + groupPosition + " " + childPosition);
+                if (groupPosition == SCANTYPEINDEX) { //for SCAN TYPES
+                    scanType = SCANTYPES[childPosition]; //update the type of scan to perform
+                    if (_lastScanTypeSelected != null) {
+                        _lastScanTypeSelected.toggleSelected();
+                    }
+                    ((ListItem) listAdapter.getChild(groupPosition, childPosition)).setSelected(true);
+                    _lastScanTypeSelected = (ListItem) listAdapter.getChild(groupPosition, childPosition);
+                } else if (groupPosition == OPTIONTYPEINDEX) { //for OPTIONS
+                    optionsArr[childPosition] = !optionsArr[childPosition]; //update the option selection boolean here
+                    ((ListItem) listAdapter.getChild(groupPosition, childPosition)).toggleSelected(); //update the option selection boolean in the data bound to the view
+                }
+                listAdapter.notifyDataSetChanged(); //refresh view
+                return false;
+            }
         });
 
         _btnSaveResults.setOnClickListener(new View.OnClickListener() {
@@ -197,7 +209,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         for (int i = 0; i < optionsArr.length; i++) {
             Log.d("Options", "" + optionsArr[i]);
         }
-        Log.d("Options", " " );
+        Log.d("Options", " ");
     }
 
     public void btnScanNmap_OnClick(View view) {
@@ -212,7 +224,7 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
 
     /* Need to parse output and insert items into db */
     public void saveResults() {
-        long scanID = InsertScanIntoDB(activityContext,scanName);
+        long scanID = InsertScanIntoDB(activityContext, scanName);
 
 
         // TODO use parser to fill the null values in. this will probably be done in a loop for all scanned hosts
@@ -229,16 +241,13 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
              // if OS is parsed from device --> run query for shodan exploits
           long hostID = InsertHostIntoDB(this,host,ip.....,null,null,scanID);
          */
-        long hostID = InsertHostIntoDB(this,null,null,null,null,scanID);
-
-
+        long hostID = InsertHostIntoDB(this, null, null, null, null, scanID);
         if (osFingerPrinted) {
-            queryShodanExploits(os);
-            InsertExploitIntoDB(activityContext, null, null, hostID);
+            getExploitsForOS(activityContext, os, hostID);
         }
 
 
-        Log.d(TAG,"Scan Results Saved");
+        Log.d(TAG, "Scan Results Saved");
     }
 
     // Names scan
@@ -324,14 +333,59 @@ public class ActivityEZScan extends Activity implements IAsyncCommandCallback {
         return results;
     }
 
-    public void queryShodanExploits(String os) {
-        final String BASE_URL = "https://exploits.shodan.io/api/search?query=";
-        final String API_KEY = "ofqxN4bGWWDA5GwDEPZNMoEiddgBBZ9B";
-        String query = BASE_URL + os + "&key=" + API_KEY;
 
+    public void getExploitsForOS(Context context, String os, long hostID) {
+        Log.i(TAG, "Fetch exploits for OS from Shodan API...");
+        dlgLoading.setMessage("Getting exploits for OS: " + os);
+        dlgLoading.show();
 
+        StringBuilder postData = new StringBuilder();
 
+        try {
 
+            postData.append("&" + URLEncoder.encode("query", "UTF-8"));
+            postData.append("=" + URLEncoder.encode(os, "UTF-8"));
 
+            postData.append("&" + URLEncoder.encode("key", "UTF-8"));//
+            postData.append("=" + URLEncoder.encode("ofqxN4bGWWDA5GwDEPZNMoEiddgBBZ9B", "UTF-8"));
+
+            new GetExploitsPostTask().execute(new ShodanPostRequest(this, postData.toString(), hostID, this));
+        } catch (Exception ex) {
+            Log.i(TAG, "Error starting post: " + ex.getMessage());
+        }
+    }
+
+    @Override
+    public void ShodanPostCallback(String jsonResponse, long hostID) {
+        // Dismiss the dialog box telling the user to wait
+        if (dlgLoading.isShowing())
+            dlgLoading.dismiss();
+
+        // Do something with the response
+
+        try {
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+            JSONArray jsonArray = jsonObject.getJSONArray("matches");
+
+            for (int i=0; i < jsonArray.length(); i++) {
+                try {
+                    JSONObject oneObject = jsonArray.getJSONObject(i);
+                    // Pulling items from the array
+                    String source = oneObject.getString("source");
+                    String id = oneObject.getString("_id");
+                    String description = oneObject.getString("description");
+                    String name = source + id;
+
+                    InsertExploitIntoDB(activityContext, name, description, hostID);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Toast.makeText(this, "Response --> " + jsonResponse, Toast.LENGTH_SHORT).show();
     }
 }

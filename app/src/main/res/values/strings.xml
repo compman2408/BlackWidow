@@ -2,4 +2,6 @@
     <!-- GENERAL ACTIVITY STRINGS -->
     <string name="app_name">Black Widow</string>
     <string name="activity_scan_label">Network Scan</string>
+    <string name="activity_calculator">Calculator</string>
+    <string name="title_activity_saved_scans">SavedScans</string>
 </resources>

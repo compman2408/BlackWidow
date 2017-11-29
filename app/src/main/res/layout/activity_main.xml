@@ -39,6 +39,12 @@
         android:text="Terminal"/>
 
     <Button
+        android:id="@+id/btnScanHistory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="btnViewScanHistory_OnClick"
+        android:text="Saved Scans" />
+    <Button
         android:id="@+id/btnEZScan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
