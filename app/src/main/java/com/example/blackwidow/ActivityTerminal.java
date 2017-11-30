@@ -15,6 +15,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+/**
+ * Contributed to by Ryan, Alex, Bobak
+ * A terminal-style activity that allows the user to execute nmap by manually typing in arguments (-v, -O, etc.) and IP addresses
+ */
+
 public class ActivityTerminal extends Activity implements IAsyncCommandCallback {
     private static final String TAG = "ActivityTerminal";
     private static final String LINE_BEGINNING = "{{!user}}@android:~$ ";

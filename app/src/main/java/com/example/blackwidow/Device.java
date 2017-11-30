@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 /**
  * Created by Ryan on 10/10/2017.
+ * A data type used to store information about hosts on the network
  */
 
 public class Device {

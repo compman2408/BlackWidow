@@ -12,6 +12,11 @@ import android.widget.Toast;
 
 import java.net.URLEncoder;
 
+/**
+ * Contributed to by Ryan
+ * An activity that allows the user to manually enter an operating system and return potential exploits linked to it using Shodan
+ */
+
 public class ActivityShodanTest extends Activity implements IShodanPostCallback {
     private static final String TAG = "ActivityShodanTest";
 

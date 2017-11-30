@@ -32,7 +32,9 @@ import static com.example.blackwidow.PhoneDB.*;
 
 
 /**
- * Created by Bobak on 11/19/2017.
+ * Contributed to by Bobak, Alex, and John
+ * Activity which allows the user to execute with nmap using preset scan types and options
+ * Includes a methods used to parse the input and save them to the SQLite database
  */
 
 public class ActivityEZScan extends Activity implements IAsyncCommandCallback, IShodanPostCallback {

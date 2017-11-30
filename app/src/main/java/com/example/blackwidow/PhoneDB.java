@@ -10,7 +10,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 /**
- * Created by Ryan on 11/26/2017.
+ * Contributed to by Ryan and Alex
+ * Class used to interact with the SQLite database, allowing for storing/querying scans and hosts
  */
 
 public class PhoneDB {

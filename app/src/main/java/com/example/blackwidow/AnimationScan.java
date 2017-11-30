@@ -12,6 +12,7 @@ import android.graphics.drawable.shapes.RectShape;
 
 /**
  * Created by Ryan on 10/15/2017.
+ * The handler for the animation of the Scan button
  */
 
 public class AnimationScan extends AnimationDrawable {

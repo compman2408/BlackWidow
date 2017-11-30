@@ -4,7 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Alex on 11/28/2017.
+ * Contributed to by Alex
+ * A data type to store the device information from the parser of the nmap scan results
  */
 
 public class NmapReturn {

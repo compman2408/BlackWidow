@@ -13,6 +13,12 @@ import java.util.List;
 
 import static com.example.blackwidow.PhoneDB.*;
 
+
+/**
+ * Contributed to by Alex
+ * Activity that loads and displays the Saved scans from the SQLite Database in an ExpandableListView
+ */
+
 public class SavedScans extends Activity {
 
     private ArrayList<Scan> scans;

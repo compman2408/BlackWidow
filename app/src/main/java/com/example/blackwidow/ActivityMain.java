@@ -17,6 +17,12 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+
+/**
+ * Contributed to by Ryan, Alex, Bobak
+ * Main page activity that has buttons that are linked to activities for the ShodanTest, Terminal nmap, EZ Scan, and Saved Scans
+ */
+
 public class ActivityMain extends Activity implements IAsyncZipFileProcessingCallback {
     private static final String TAG = "ActivityMain";
 

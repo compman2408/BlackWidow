@@ -11,7 +11,8 @@ import java.net.URL;
 import javax.net.ssl.HttpsURLConnection;
 
 /**
- * Created by Ryan on 11/28/2017.
+ * Contributed to by Ryan
+ * Used to call post/get requests synchronously/asynchronously
  */
 
 public class NetworkHelper {

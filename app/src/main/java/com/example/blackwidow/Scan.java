@@ -4,7 +4,8 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 /**
- * Created by Alex on 11/27/2017.
+ * Contributed to by Alex
+ * Data type to store the information about a specific nmap scan that was saved, including a time stamp, a name to save it as in the SQLite Database and an ArrayList of all the devices returned by the scan
  */
 
 public class Scan {

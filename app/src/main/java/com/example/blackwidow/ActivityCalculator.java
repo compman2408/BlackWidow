@@ -1,7 +1,8 @@
 package com.example.blackwidow;
 
 /**
- * Created by Ryan on 11/28/2017.
+ * Contributed to by Ryan
+ * A simple calculator that masks the app functionality that can create the main activity upon entering 12345 and pressing "="
  */
 
 import android.app.Activity;

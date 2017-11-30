@@ -19,7 +19,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 /**
- * Created by Ryan on 11/20/2017.
+ * Contributed to by Ryan
+ * General class with misc methods used to initialize the project with by extracting nmap binary files and to be able to execute map commands asynchronously
  */
 
 public class Utils {

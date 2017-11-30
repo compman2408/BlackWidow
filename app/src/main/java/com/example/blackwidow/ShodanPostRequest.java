@@ -3,7 +3,8 @@ package com.example.blackwidow;
 import android.content.Context;
 
 /**
- * Created by Ryan on 11/28/2017.
+ * Contributed to by Ryan
+ * Class to interact with the Shodan API to obtain exploits using OS information
  */
 
 public class ShodanPostRequest {

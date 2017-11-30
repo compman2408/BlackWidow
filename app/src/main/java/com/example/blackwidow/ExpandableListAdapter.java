@@ -15,6 +15,7 @@ import java.util.List;
 
 /**
  * Created by Bobak on 11/23/2017.
+ * Class used to link data to ExpandableListViews that are used in Activities
  */
 
 public class ExpandableListAdapter extends BaseExpandableListAdapter {
