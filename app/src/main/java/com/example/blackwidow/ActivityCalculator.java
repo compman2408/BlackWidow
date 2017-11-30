@@ -3,6 +3,11 @@ package com.example.blackwidow;
 /**
  * Contributed to by Ryan
  * A simple calculator that masks the app functionality that can create the main activity upon entering 12345 and pressing "="
+ *
+ * Most of this was pre-made and downloaded from a project on GitHub. Changes had to be made in
+ * order for it to be a concealer for our Black Widow app and to actually work properly.
+ *
+ * Downloaded from GitHub project: https://github.com/CMDann/Simple-Android-Calculator
  */
 
 import android.app.Activity;
