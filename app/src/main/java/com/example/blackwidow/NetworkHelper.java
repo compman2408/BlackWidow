@@ -12,7 +12,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 /**
  * Contributed to by Ryan
- * Used to call post/get requests synchronously/asynchronously
+ * This class handles network communication. Every method here can be called either synchronously
+ * or asynchronously, however they should always be called asynchronously.
  */
 
 public class NetworkHelper {

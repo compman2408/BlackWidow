@@ -4,7 +4,8 @@ import android.content.Context;
 
 /**
  * Contributed to by Ryan
- * Class to interact with the Shodan API to obtain exploits using OS information
+ * Class to interact with the Shodan API to obtain exploits using OS information and carry a
+ * callback pointer to be used for asynchronous network calls
  */
 
 public class ShodanPostRequest {
